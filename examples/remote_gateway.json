@@ -1,0 +1,26 @@
+{
+  "transport": "http",
+  "public_url": "https://mcpilot.example.com",
+  "listen": {"host": "0.0.0.0", "port": 8000},
+  "auth": {
+    "issuer": "https://login.example.com",
+    "audience": "https://mcpilot.example.com/mcp",
+    "jwks_url": "https://login.example.com/.well-known/jwks.json",
+    "required_scopes": ["mcpilot"],
+    "tenant_claim": "org_id",
+    "user_claim": "email"
+  },
+  "tenants": {
+    "acme": {"manifest": "tenants/acme.json", "capabilities": ["issues.read", "documents.search"], "accounts": ["default", "work"]}
+  },
+  "state_dir": "/var/lib/mcpilot",
+  "audit_log": "/var/log/mcpilot/audit.jsonl",
+  "key_env": "MCPILOT_SECRET_KEY",
+  "request_state_keys_env": "MCPILOT_REQUEST_STATE_KEY",
+  "browser_identity_header": "X-Forwarded-Email",
+  "max_users": 1000,
+  "idle_timeout": 900,
+  "calls_per_minute": 120,
+  "connect_wait": 3,
+  "login_wait": 60
+}

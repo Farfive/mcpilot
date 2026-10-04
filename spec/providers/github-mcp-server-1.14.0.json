@@ -1,0 +1,353 @@
+{
+ "provider": "github",
+ "server": "github/github-mcp-server",
+ "version": "v1.14.0",
+ "binary_sha256": "e3baa88424ecc24ae504a1c98c128823fc2c2edbe9dd64e1456f39edea701140",
+ "captured": "2026-10-05",
+ "mode": "stdio --read-only, default toolsets",
+ "evidence": "E2E sie\u0107: real server binary, tools/list without a valid token; not the hosted endpoint",
+ "tools": {
+  "get_commit": {
+   "required": [
+    "owner",
+    "repo",
+    "sha"
+   ],
+   "properties": [
+    "detail",
+    "owner",
+    "page",
+    "perPage",
+    "repo",
+    "sha"
+   ]
+  },
+  "get_file_contents": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "fields",
+    "owner",
+    "path",
+    "ref",
+    "repo",
+    "sha"
+   ]
+  },
+  "get_label": {
+   "required": [
+    "owner",
+    "repo",
+    "name"
+   ],
+   "properties": [
+    "name",
+    "owner",
+    "repo"
+   ]
+  },
+  "get_latest_release": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "owner",
+    "repo"
+   ]
+  },
+  "get_me": {
+   "required": [],
+   "properties": []
+  },
+  "get_release_by_tag": {
+   "required": [
+    "owner",
+    "repo",
+    "tag"
+   ],
+   "properties": [
+    "owner",
+    "repo",
+    "tag"
+   ]
+  },
+  "get_tag": {
+   "required": [
+    "owner",
+    "repo",
+    "tag"
+   ],
+   "properties": [
+    "owner",
+    "repo",
+    "tag"
+   ]
+  },
+  "get_team_members": {
+   "required": [
+    "org",
+    "team_slug"
+   ],
+   "properties": [
+    "org",
+    "team_slug"
+   ]
+  },
+  "get_teams": {
+   "required": [],
+   "properties": [
+    "user"
+   ]
+  },
+  "issue_read": {
+   "required": [
+    "method",
+    "owner",
+    "repo",
+    "issue_number"
+   ],
+   "properties": [
+    "issue_number",
+    "method",
+    "owner",
+    "page",
+    "perPage",
+    "repo"
+   ]
+  },
+  "list_branches": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "owner",
+    "page",
+    "perPage",
+    "repo"
+   ]
+  },
+  "list_commits": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "author",
+    "fields",
+    "owner",
+    "page",
+    "path",
+    "perPage",
+    "repo",
+    "sha",
+    "since",
+    "until"
+   ]
+  },
+  "list_issue_fields": {
+   "required": [
+    "owner"
+   ],
+   "properties": [
+    "owner",
+    "repo"
+   ]
+  },
+  "list_issue_types": {
+   "required": [
+    "owner"
+   ],
+   "properties": [
+    "owner",
+    "repo"
+   ]
+  },
+  "list_issues": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "after",
+    "direction",
+    "field_filters",
+    "fields",
+    "labels",
+    "orderBy",
+    "owner",
+    "perPage",
+    "repo",
+    "since",
+    "state"
+   ]
+  },
+  "list_pull_requests": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "base",
+    "direction",
+    "fields",
+    "head",
+    "owner",
+    "page",
+    "perPage",
+    "repo",
+    "sort",
+    "state"
+   ]
+  },
+  "list_releases": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "fields",
+    "owner",
+    "page",
+    "perPage",
+    "repo"
+   ]
+  },
+  "list_repository_collaborators": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "affiliation",
+    "owner",
+    "page",
+    "perPage",
+    "repo"
+   ]
+  },
+  "list_tags": {
+   "required": [
+    "owner",
+    "repo"
+   ],
+   "properties": [
+    "owner",
+    "page",
+    "perPage",
+    "repo"
+   ]
+  },
+  "pull_request_read": {
+   "required": [
+    "method",
+    "owner",
+    "repo",
+    "pullNumber"
+   ],
+   "properties": [
+    "after",
+    "method",
+    "owner",
+    "page",
+    "perPage",
+    "pullNumber",
+    "repo"
+   ]
+  },
+  "search_code": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "fields",
+    "order",
+    "page",
+    "perPage",
+    "query",
+    "sort"
+   ]
+  },
+  "search_commits": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "order",
+    "page",
+    "perPage",
+    "query",
+    "sort"
+   ]
+  },
+  "search_issues": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "fields",
+    "order",
+    "owner",
+    "page",
+    "perPage",
+    "query",
+    "repo",
+    "sort"
+   ]
+  },
+  "search_pull_requests": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "fields",
+    "order",
+    "owner",
+    "page",
+    "perPage",
+    "query",
+    "repo",
+    "sort"
+   ]
+  },
+  "search_repositories": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "minimal_output",
+    "order",
+    "page",
+    "perPage",
+    "query",
+    "sort"
+   ]
+  },
+  "search_users": {
+   "required": [
+    "query"
+   ],
+   "properties": [
+    "order",
+    "page",
+    "perPage",
+    "query",
+    "sort"
+   ]
+  },
+  "ui_get": {
+   "required": [
+    "method",
+    "owner"
+   ],
+   "properties": [
+    "method",
+    "owner",
+    "repo"
+   ]
+  }
+ }
+}

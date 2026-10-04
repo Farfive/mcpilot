@@ -1,0 +1,55 @@
+{
+ "provider": "notion",
+ "server": "Notion hosted MCP (https://mcp.notion.com/mcp)",
+ "version": "managed",
+ "captured": "2026-10-05",
+ "evidence": "documentation only: https://developers.notion.com/guides/mcp/mcp-supported-tools; tools/list on an account is still required (parameter names marked 'to_confirm')",
+ "tools": {
+  "notion-search": {
+   "required": [
+    "query"
+   ],
+   "read_only": true
+  },
+  "notion-ai-search": {
+   "required": [
+    "query"
+   ],
+   "read_only": true
+  },
+  "notion-fetch": {
+   "required": [
+    "id (URL or ID; exact parameter name to_confirm)"
+   ],
+   "read_only": true
+  },
+  "notion-get-comments": {
+   "required": [
+    "page id or URL (to_confirm)"
+   ],
+   "read_only": true
+  },
+  "notion-get-users": {
+   "required": [],
+   "read_only": true
+  },
+  "notion-get-teams": {
+   "required": [],
+   "read_only": true
+  },
+  "notion-get-tool-access": {
+   "required": [],
+   "read_only": true
+  },
+  "notion-query-data-sources": {
+   "required": [
+    "mode"
+   ],
+   "read_only": true
+  },
+  "notion-query-meeting-notes": {
+   "required": [],
+   "read_only": true
+  }
+ }
+}

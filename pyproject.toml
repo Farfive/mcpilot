@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcpilot"
+version = "0.1.0"
+description = "Policy-bound discovery, authorization and execution for MCP tools"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+  "mcp==2.3.0",
+  "pydantic>=2.11,<3",
+  "httpx2>=2.13,<3",
+  "jsonschema>=4.23,<5",
+  "cryptography>=44",
+  "packaging>=24",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.12", "build>=1.2"]
+langchain = ["langchain-core>=1,<2"]
+agent = ["anthropic>=1.11,<2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcpilot"]
+
+[tool.hatch.build.targets.sdist]
+# Anchored patterns: unanchored ones (gitignore semantics) also match inside ts/node_modules.
+include = ["/src/mcpilot", "/tests", "/examples", "/scripts", "/spec", "/docs", "/README.md", "/CHANGELOG.md",
+           "/SECURITY.md", "/LICENSE", "/pyproject.toml"]
+exclude = ["__pycache__", "*.pyc"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

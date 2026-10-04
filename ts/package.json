@@ -1,0 +1,42 @@
+{
+  "name": "@mcpilot/sdk",
+  "version": "0.1.0",
+  "description": "MCPilot TypeScript SDK: task -> MCP integration selection -> authorization -> tools -> call",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "7.0.2"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./node": {
+      "types": "./dist/src/node.d.ts",
+      "default": "./dist/src/node.js"
+    }
+  },
+  "files": [
+    "dist/src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build && node --test dist/test/",
+    "clean": "rm -rf dist",
+    "example": "npm run build && node dist/examples/local-task.js",
+    "prepack": "npm run build"
+  }
+}
