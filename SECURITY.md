@@ -2,7 +2,7 @@
 
 ## Zgłaszanie podatności
 
-Nie zgłaszaj podatności w publicznych issue. Kanał prywatny: **do uzupełnienia przez właściciela projektu** (np. GitHub Security Advisories po publikacji repozytorium albo adres zespołu bezpieczeństwa). Odpowiedź i harmonogram poprawki ustala właściciel; projekt nie deklaruje SLA.
+Nie zgłaszaj podatności w publicznych issue. Kanał prywatny: [GitHub Private Vulnerability Reporting](https://github.com/Farfive/mcpilot/security/advisories/new) (zakładka *Security → Report a vulnerability*). Odpowiedź i harmonogram poprawki ustala właściciel; projekt nie deklaruje SLA.
 
 ## Wspierane wersje
 
