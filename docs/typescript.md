@@ -5,7 +5,7 @@
 ```sh
 cd ts
 npm install
-npm test          # build + 18 testów, w tym z prawdziwymi serwerami Python
+npm test          # build + 17 testów, w tym z prawdziwymi serwerami Python
 npm run example   # zadanie → lokalny serwer stdio → wywołanie
 ```
 

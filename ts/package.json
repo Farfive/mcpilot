@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "test": "npm run build && node --test dist/test/",
+    "test": "npm run build && node --test dist/test/*.test.js",
     "clean": "rm -rf dist",
     "example": "npm run build && node dist/examples/local-task.js",
     "prepack": "npm run build"

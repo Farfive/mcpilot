@@ -13,7 +13,7 @@ Stan na **2026-10-04**. Każde kryterium ma status i dowód, który można uruch
 python -m pytest                                        # 96 testów lokalnych + 1 opcjonalny sieciowy
 MCPILOT_NETWORK_TESTS=1 python -m pytest tests/test_network.py
 ruff check .
-(cd ts && npm test)                                     # 18 testów TypeScript, w tym z serwerami Python
+(cd ts && npm test)                                     # 17 testów TypeScript, w tym z serwerami Python
 scripts/ci.sh                                           # lokalny odpowiednik CI + artefakty
 ```
 
