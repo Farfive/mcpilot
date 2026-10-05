@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+    <filter id="s" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/></filter>
+  </defs>
+  <rect width="1200" height="780" fill="#ffffff"/>
+  <text x="40" y="48" font-size="26" font-weight="700" fill="#0f172a">How MCPilot works</text>
+  <text x="40" y="74" font-size="15" fill="#64748b">The model asks for capabilities; MCPilot decides which approved MCP servers to use, signs in, and exposes only the tools the task needs.</text>
+
+  <!-- Host -->
+  <rect x="40" y="110" width="260" height="300" rx="14" fill="#f8fafc" stroke="#cbd5e1" filter="url(#s)"/>
+  <text x="60" y="142" font-size="17" font-weight="700" fill="#0f172a">MCP host</text>
+  <text x="60" y="164" font-size="13" fill="#64748b">Claude Code · Cursor · VS Code</text>
+  <text x="60" y="182" font-size="13" fill="#64748b">or your own app + agent loop</text>
+  <rect x="60" y="202" width="220" height="92" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="76" y="226" font-size="14" font-weight="600" fill="#334155">LLM sees two tools</text>
+  <text x="76" y="250" font-size="13" fill="#4f46e5" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_find_tools</text>
+  <text x="76" y="272" font-size="13" fill="#4f46e5" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_call_tool</text>
+  <text x="60" y="324" font-size="13" fill="#475569">No catalog, endpoints, commands</text>
+  <text x="60" y="344" font-size="13" fill="#475569">or credentials in the model's context.</text>
+  <text x="60" y="380" font-size="12" fill="#94a3b8">stdio (local) or HTTPS + token (remote)</text>
+
+  <rect x="40" y="440" width="260" height="110" rx="14" fill="#fff7ed" stroke="#fdba74" filter="url(#s)"/>
+  <text x="60" y="472" font-size="17" font-weight="700" fill="#9a3412">User's browser</text>
+  <text x="60" y="496" font-size="13" fill="#9a3412">Signs in at the provider (OAuth).</text>
+  <text x="60" y="516" font-size="13" fill="#9a3412">Passwords and tokens never pass</text>
+  <text x="60" y="536" font-size="13" fill="#9a3412">through the model.</text>
+
+  <!-- MCPilot -->
+  <rect x="350" y="110" width="500" height="440" rx="16" fill="#eef2ff" stroke="#a5b4fc" filter="url(#s)"/>
+  <text x="372" y="142" font-size="18" font-weight="700" fill="#3730a3">MCPilot gateway / SDK</text>
+  <text x="372" y="162" font-size="13" fill="#6366f1">Python · TypeScript · same data contract</text>
+  <g font-size="14">
+    <rect x="372" y="182" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="388" y="208" font-weight="700" fill="#1e1b4b">1  Discovery layer</text>
+    <text x="388" y="232" font-size="13" fill="#475569">Two meta-tools, token budget,</text>
+    <text x="388" y="252" font-size="13" fill="#475569">step/cost budget per task</text>
+
+    <rect x="610" y="182" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="626" y="208" font-weight="700" fill="#1e1b4b">2  Context search</text>
+    <text x="626" y="232" font-size="13" fill="#475569">BM25F over the catalog, PL/EN,</text>
+    <text x="626" y="252" font-size="13" fill="#475569">vendor intent, inflection</text>
+
+    <rect x="372" y="294" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="388" y="320" font-weight="700" fill="#1e1b4b">3  Router + policy</text>
+    <text x="388" y="344" font-size="13" fill="#475569">Approved manifests only,</text>
+    <text x="388" y="364" font-size="13" fill="#475569">accounts, scopes, read/write</text>
+
+    <rect x="610" y="294" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="626" y="320" font-weight="700" fill="#1e1b4b">4  Auth manager</text>
+    <text x="626" y="344" font-size="13" fill="#475569">MCP OAuth (PKCE, minimal</text>
+    <text x="626" y="364" font-size="13" fill="#475569">scopes), PAT, login button</text>
+
+    <rect x="372" y="406" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="388" y="432" font-weight="700" fill="#1e1b4b">5  Runtime</text>
+    <text x="388" y="456" font-size="13" fill="#475569">stdio + Streamable HTTP,</text>
+    <text x="388" y="476" font-size="13" fill="#475569">timeouts, no write replay</text>
+
+    <rect x="610" y="406" width="226" height="100" rx="10" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="626" y="432" font-weight="700" fill="#1e1b4b">6  Audit + metrics</text>
+    <text x="626" y="456" font-size="13" fill="#475569">JSONL events with tenant,</text>
+    <text x="626" y="476" font-size="13" fill="#475569">task, duration — no secrets</text>
+  </g>
+  <text x="372" y="532" font-size="12" fill="#6366f1">Importing the library performs no I/O, installs nothing and starts no process.</text>
+
+  <!-- Servers -->
+  <rect x="900" y="110" width="260" height="440" rx="14" fill="#f0fdfa" stroke="#5eead4" filter="url(#s)"/>
+  <text x="920" y="142" font-size="17" font-weight="700" fill="#115e59">MCP servers</text>
+  <text x="920" y="162" font-size="13" fill="#0f766e">approved by an administrator</text>
+  <g font-size="14">
+    <rect x="920" y="182" width="220" height="64" rx="10" fill="#ffffff" stroke="#99f6e4"/>
+    <text x="936" y="208" font-weight="700" fill="#134e4a">Notion</text><text x="936" y="230" font-size="13" fill="#475569">HTTP · OAuth</text>
+    <rect x="920" y="258" width="220" height="64" rx="10" fill="#ffffff" stroke="#99f6e4"/>
+    <text x="936" y="284" font-weight="700" fill="#134e4a">GitHub</text><text x="936" y="306" font-size="13" fill="#475569">HTTP · token (read-only)</text>
+    <rect x="920" y="334" width="220" height="64" rx="10" fill="#ffffff" stroke="#99f6e4"/>
+    <text x="936" y="360" font-weight="700" fill="#134e4a">Local files</text><text x="936" y="382" font-size="13" fill="#475569">stdio · process per session</text>
+    <rect x="920" y="410" width="220" height="64" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-dasharray="5 4"/>
+    <text x="936" y="436" font-weight="700" fill="#134e4a">More, once approved</text><text x="936" y="458" font-size="13" fill="#475569">manifest + tool mapping</text>
+  </g>
+
+  <!-- Stores -->
+  <rect x="350" y="590" width="300" height="100" rx="14" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="370" y="620" font-size="15" font-weight="700" fill="#0f172a">Catalog</text>
+  <text x="370" y="644" font-size="13" fill="#334155">Approved manifests — executable</text>
+  <text x="370" y="666" font-size="13" fill="#64748b">MCP Registry (~40k entries) — suggestions</text>
+  <text x="370" y="684" font-size="13" fill="#64748b">only, never executed</text>
+  <rect x="670" y="590" width="300" height="100" rx="14" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="690" y="620" font-size="15" font-weight="700" fill="#0f172a">Secrets</text>
+  <text x="690" y="644" font-size="13" fill="#334155">Key in the OS keychain</text>
+  <text x="690" y="666" font-size="13" fill="#64748b">Tokens in an encrypted store (Fernet),</text>
+  <text x="690" y="684" font-size="13" fill="#64748b">keyed per user, account and endpoint</text>
+
+  <!-- Arrows -->
+  <g stroke="#475569" stroke-width="2" fill="none">
+    <path d="M300 255 L346 255" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M850 255 L896 255" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M850 440 L896 440" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M500 550 L500 586" marker-end="url(#a)"/>
+    <path d="M760 550 L760 586" marker-end="url(#a)"/>
+    <path d="M300 495 L346 495" marker-end="url(#a)" stroke-dasharray="6 5"/>
+  </g>
+  <path d="M170 550 L170 735 L1030 735 L1030 554" stroke="#f97316" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#a)"/>
+  <rect x="490" y="724" width="220" height="22" fill="#ffffff"/>
+  <text x="600" y="740" font-size="12" fill="#c2410c" text-anchor="middle">provider sign-in (OAuth consent)</text>
+  <text x="323" y="516" font-size="11" fill="#64748b" text-anchor="middle">callback</text>
+</svg>

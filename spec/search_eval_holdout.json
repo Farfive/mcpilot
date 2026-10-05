@@ -1,0 +1,17 @@
+{
+ "about": "Held-out cases written after tuning on search_eval.json and evaluated once without further changes (2026-10-05). Same registry snapshot and approved pilot manifest.",
+ "cases": [
+  {"query": "jakie mam zaległe zadania w Asanie", "expect_any": ["~asana"]},
+  {"query": "pokaż ostatnie błędy z Sentry", "expect_any": ["~sentry"]},
+  {"query": "znajdź stronę w Confluence o onboardingu", "expect_any": ["com.atlassian/atlassian-mcp-server"]},
+  {"query": "create a linear issue for this bug", "expect_any": ["app.linear/linear"]},
+  {"query": "lista rekordów w tabeli Airtable z klientami", "expect_any": ["com.airtable/mcp"]},
+  {"query": "Notion: pokaż notatki ze spotkania", "expect_any": ["com.notion/mcp"]},
+  {"query": "jakie płatności nie przeszły w Stripie w tym tygodniu", "expect_any": ["com.stripe/mcp"]},
+  {"query": "check the build logs on vercel", "expect_any": ["com.vercel/vercel-mcp"]},
+  {"query": "przeszukaj kanały slacka o incydencie", "expect_any": ["~slack"]},
+  {"query": "sprawdź pipeline w gitlabie", "expect_any": ["com.gitlab/mcp"]},
+  {"query": "przeczytaj plik konfiguracji w moim katalogu", "expect_any": ["mcpilot/filesystem"]},
+  {"query": "zapytanie SQL do bazy postgres", "expect_any": ["~postgres"]}
+ ]
+}

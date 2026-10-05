@@ -39,8 +39,8 @@ from .sdk import MCPilot
 
 USER = "pilot-user"
 REVOKE_HELP = {
-    "github": "GitHub → Settings → Developer settings → Personal access tokens: usuń token użyty w przebiegu.",
-    "notion": "Notion → Settings → Connections: odłącz połączenie MCP użyte w przebiegu.",
+    "github": "GitHub → Settings → Developer settings → Personal access tokens: usuń token, którego używa MCPilot.",
+    "notion": "Notion → Settings → Connections: odłącz połączenie MCP, którego używa MCPilot.",
 }
 
 

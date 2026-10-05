@@ -13,6 +13,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/), wersjonowanie semantycz
 - Skrypt protokołu pilotażu `python -m mcpilot.pilot` z raportem bez sekretów; diagnostyka mapowania `MCPilot.diagnose`.
 - Migawki narzędzi dostawców (`spec/providers/`) i dowody zgodności hostów (`spec/hosts/`, `docs/hosts.md`).
 - CI (Python 3.11–3.13, Node 20/22), artefakty z `SHA256SUMS`.
+- Pakiet pilotażowy `python -m mcpilot setup | status | disconnect | uninstall`: klucz szyfrujący w pęku kluczy systemu (`keychain_item`, extra `keychain`), PAT w zaszyfrowanym magazynie, rejestracja w Claude Code bez sekretów; brama bez klucza ostrzega, że tokeny żyją tylko w pamięci.
+
+- Dobór MCP z kontekstu (`mcpilot.search`): indeks BM25F nad zatwierdzonymi integracjami i rejestrem, polska odmiana nazw produktów, intencja dostawcy, pokrycie wielu wątków; pole `context` w `mcpilot_find_tools`, `suggestions` z `needs_admin_approval`; `registry_sync` w bramie lokalnej; `python -m mcpilot.search --eval`.
 
 ### Zmienione (niezgodne wstecz)
 - Odcisk manifestu i skrót klucza poświadczeń liczone z RFC 8785 (zgodne z TypeScript). Poświadczenia zapisane wcześniej w `EncryptedFileSecretStore` trzeba połączyć ponownie.

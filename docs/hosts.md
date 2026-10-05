@@ -6,13 +6,15 @@ Stan na **2026-10-05**. „Zweryfikowane” oznacza przebieg w prawdziwym hości
 
 | Host | Brama stdio | Brama HTTP + token hosta | OAuth hosta do bramy (PRM) | Elicytacja URL (logowanie u dostawców) | Status |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code 2.1.284 (CLI, `-p`) | **zweryfikowane**: `find_tools` → `call_tool` → odczyt | **zweryfikowane**: nagłówek `Authorization`, tenant w audycie | nie testowano | nie testowano (tryb `-p` jest nieinteraktywny) | E2E lokalnie |
+| Claude Code 2.1.284 (CLI, `-p`) | **zweryfikowane**: `find_tools` → `call_tool` → odczyt; także z `python -m mcpilot setup` i ponownym użyciem PAT między sesjami | **zweryfikowane**: nagłówek `Authorization`, tenant w audycie | nie testowano | nie testowano (tryb `-p` jest nieinteraktywny) | E2E lokalnie |
 | Cursor | dokumentacja: `mcpServers` z `command`/`args`/`env` | dokumentacja: `url` + `headers` (także `${env:…}`) | dokumentacja: OAuth, callback `http://localhost:8787/callback` | dokumentacja: „Elicitation — Supported”, bez rozróżnienia trybu formularza i URL | nie zweryfikowano |
 | VS Code (Copilot) | dokumentacja: `.vscode/mcp.json`, obiekt `servers` | dokumentacja: `type: http`, `url`, `headers` | dokumentacja: OAuth, wstępnie zarejestrowany `client_id` | nie znaleziono w dokumentacji (szukano w dwóch stronach podanych niżej) | nie zweryfikowano |
 
 **Dowody:**
 - `spec/hosts/claude-code-2.1.284-stdio-2026-10-05.jsonl`: `connect ready` 302 ms, `call ok read_file` 9 ms.
 - `spec/hosts/claude-code-2.1.284-http-2026-10-05.jsonl`: tenant `acme`, użytkownik `alice`, `call ok read_file`; host zwrócił pierwszą linię pliku `# Project Atlas`.
+
+- Pakiet pilotażowy (2026-10-05): `python -m mcpilot setup --scope local` z prawdziwym pękiem kluczy macOS zarejestrował bramę; `claude mcp get` pokazał „✔ Connected” i pustą sekcję `Environment`. Dwie osobne sesje `claude -p` odczytały issue z lokalnej atrapy GitHub (PAT z zaszyfrowanego magazynu, bez logowania); audyt: 2× `connect ready`, 2× `call ok search_issues`. `~/.claude.json` nie zawierał ani PAT, ani klucza. `status`, `disconnect github` i `uninstall --purge` posprzątały rejestrację, wpis w pęku kluczy i katalog.
 
 **Źródła dokumentacji (2026-10-05):**
 - Cursor: [cursor.com/docs/mcp](https://cursor.com/docs/mcp), [forum: zmiana callback OAuth](https://forum.cursor.com/t/oauth-redirect-uri-changed-from-cursor-to-http-localhost-for-streamable-http-mcp/165019)

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect width="1200" height="860" fill="#ffffff"/>
+<text x="40" y="48" font-size="26" font-weight="700" fill="#0f172a">From a request to a draft answer</text>
+<text x="40" y="74" font-size="15" fill="#64748b">Flagship scenario: compare project docs in Notion with GitHub issues. Accounts were connected earlier.</text>
+<line x1="110" y1="140" x2="110" y2="820" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="35" y="100" width="150" height="40" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="110" y="126" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">User</text>
+<line x1="340" y1="140" x2="340" y2="820" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="265" y="100" width="150" height="40" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="340" y="126" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">Host + LLM</text>
+<line x1="610" y1="140" x2="610" y2="820" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="535" y="100" width="150" height="40" rx="10" fill="#eef2ff" stroke="#a5b4fc"/>
+<text x="610" y="126" font-size="15" font-weight="700" fill="#3730a3" text-anchor="middle">MCPilot</text>
+<line x1="870" y1="140" x2="870" y2="820" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="795" y="100" width="150" height="40" rx="10" fill="#f0fdfa" stroke="#5eead4"/>
+<text x="870" y="126" font-size="15" font-weight="700" fill="#115e59" text-anchor="middle">GitHub MCP</text>
+<line x1="1080" y1="140" x2="1080" y2="820" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="1005" y="100" width="150" height="40" rx="10" fill="#f0fdfa" stroke="#5eead4"/>
+<text x="1080" y="126" font-size="15" font-weight="700" fill="#115e59" text-anchor="middle">Notion MCP</text>
+<path d="M110 190 L332 190" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="126" cy="176" r="10" fill="#4f46e5"/><text x="126" y="180" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="144.0" y="182" font-size="13" fill="#1e293b" text-anchor="start">“Compare docs with issues”</text>
+<path d="M340 250 L602 250" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="356" cy="236" r="10" fill="#4f46e5"/><text x="356" y="240" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="374.0" y="242" font-size="13" fill="#1e293b" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_find_tools(task, context)</text>
+<rect x="450" y="268" width="320" height="64" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+<text x="462" y="290" font-size="12.5" fill="#3730a3">Context search + router: github, notion</text>
+<text x="462" y="309" font-size="12.5" fill="#3730a3">Policy: approved manifest, account, read-only</text>
+<path d="M610 370 L862 370" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="626" cy="356" r="10" fill="#4f46e5"/><text x="626" y="360" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="644.0" y="362" font-size="13" fill="#1e293b" text-anchor="start">connect: stored token ✓ · tools/list</text>
+<path d="M610 420 L1072 420" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="626" cy="406" r="10" fill="#4f46e5"/><text x="626" y="410" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="644.0" y="412" font-size="13" fill="#1e293b" text-anchor="start">connect: stored OAuth token ✓ · tools/list</text>
+<rect x="970" y="438" width="220" height="64" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+<text x="982" y="460" font-size="12.5" fill="#92400e">First time only: browser</text>
+<text x="982" y="479" font-size="12.5" fill="#92400e">sign-in (see login flow)</text>
+<path d="M610 470 L348 470" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="356" cy="456" r="10" fill="#4f46e5"/><text x="356" y="460" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="374.0" y="462" font-size="13" fill="#1e293b" text-anchor="start">4 read-only tools + schemas, task_id</text>
+<path d="M340 540 L602 540" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="356" cy="526" r="10" fill="#4f46e5"/><text x="356" y="530" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<text x="374.0" y="532" font-size="13" fill="#1e293b" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_call_tool(issue_read)</text>
+<path d="M610 590 L862 590" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="626" cy="576" r="10" fill="#4f46e5"/><text x="626" y="580" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+<text x="644.0" y="582" font-size="13" fill="#1e293b" text-anchor="start">tools/call · schema-validated arguments</text>
+<path d="M870 630 L618 630" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="626" cy="616" r="10" fill="#4f46e5"/><text x="626" y="620" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">8</text>
+<text x="644.0" y="622" font-size="13" fill="#1e293b" text-anchor="start">result</text>
+<path d="M340 690 L602 690" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="356" cy="676" r="10" fill="#4f46e5"/><text x="356" y="680" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">9</text>
+<text x="374.0" y="682" font-size="13" fill="#1e293b" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_call_tool(notion-fetch)</text>
+<path d="M610 730 L1072 730" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="626" cy="716" r="10" fill="#4f46e5"/><text x="626" y="720" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">10</text>
+<text x="644.0" y="722" font-size="13" fill="#1e293b" text-anchor="start">tools/call</text>
+<path d="M610 770 L348 770" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="356" cy="756" r="10" fill="#4f46e5"/><text x="356" y="760" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">11</text>
+<text x="374.0" y="762" font-size="13" fill="#1e293b" text-anchor="start">untrusted results (data only)</text>
+<path d="M340 820 L118 820" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="126" cy="806" r="10" fill="#4f46e5"/><text x="126" y="810" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">12</text>
+<text x="144.0" y="812" font-size="13" fill="#1e293b" text-anchor="start">Draft — not sent</text>
+<rect x="40" y="600" width="230" height="120" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+<text x="52" y="622" font-size="12.5" fill="#475569">Every connect and call is</text>
+<text x="52" y="641" font-size="12.5" fill="#475569">audited (tenant, task_id,</text>
+<text x="52" y="660" font-size="12.5" fill="#475569">duration) without arguments,</text>
+<text x="52" y="679" font-size="12.5" fill="#475569">results or credentials.</text>
+<text x="52" y="698" font-size="12.5" fill="#475569">Budget: 20 calls per task.</text>
+</svg>

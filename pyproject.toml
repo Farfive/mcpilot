@@ -19,9 +19,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.12", "build>=1.2"]
+dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.12", "build>=1.2", "keyring>=25"]
 langchain = ["langchain-core>=1,<2"]
 agent = ["anthropic>=1.11,<2"]
+keychain = ["keyring>=25"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcpilot"]

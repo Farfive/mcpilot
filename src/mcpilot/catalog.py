@@ -176,6 +176,11 @@ class Catalog:
                     found.append({**item, "source": source})
         return tuple(deepcopy(found[:limit]))
 
+    def registry_servers(self) -> list[dict[str, Any]]:
+        """All non-deleted registry summaries (untrusted, non-executable) for local search indexes."""
+        return [{**item, "source": source} for source, snapshot in sorted(self._snapshots.items())
+                for item in snapshot["servers"] if item["registry_status"] != "deleted"]
+
     def sync_status(self) -> dict[str, dict[str, Any]]:
         return {
             source: {

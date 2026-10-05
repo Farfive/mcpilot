@@ -57,6 +57,7 @@ from .models import Limits
 from .policy import Policy
 from .runtime import Runtime
 from .sdk import AuditSink, MCPilot
+from .search import CapabilityIndex
 
 logger = logging.getLogger(__name__)
 BrowserIdentity = Callable[[Request], Awaitable[str | None]]
@@ -282,6 +283,7 @@ class RemoteGateway:
                                         OAuthConfig(login=self.broker, redirect_uri=self.redirect_uri))
         self._installer = PackageInstaller(self.state_dir / "packages")
         self._users: dict[str, _UserSession] = {}
+        self._indexes: dict[str, CapabilityIndex] = {}
         self._users_lock = asyncio.Lock()
         self._sweeper: asyncio.Task[None] | None = None
         security = (RequestStateSecurity(keys=request_state_keys) if request_state_keys
@@ -420,8 +422,11 @@ class RemoteGateway:
                     if await self.links.wait(user_id, integration_id, account, self.connect_wait) is None:
                         await asyncio.Event().wait()  # no link: let the connection timeout decide
 
+                if principal.tenant not in self._indexes:
+                    self._indexes[principal.tenant] = CapabilityIndex.from_catalog(tenant.catalog)
                 tools = DiscoveryTools(pilot, connect_wait=self.connect_wait,
-                                       login_started=login_started if self.url_login else None)
+                                       login_started=login_started if self.url_login else None,
+                                       index=self._indexes[principal.tenant])
                 user = _UserSession(pilot, tools, principal.tenant, now, float(self.calls_per_minute), now)
                 self._users[principal.user_id] = user
             return user

@@ -11,13 +11,16 @@ import asyncio
 import contextlib
 import copy
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from jsonschema import Draft202012Validator
 
 from .errors import InvalidArguments, MCPilotError
 from .models import Plan, TaskRequest
 from .sdk import MCPilot
+
+if TYPE_CHECKING:
+    from .search import CapabilityIndex
 
 FIND_TOOLS = "mcpilot_find_tools"
 CALL_TOOL = "mcpilot_call_tool"
@@ -29,15 +32,18 @@ DEFINITIONS: tuple[dict[str, Any], ...] = (
         "name": FIND_TOOLS,
         "description": (
             "Find tools for the current task among integrations the application approved. "
-            "Returns tool ids with input schemas and the status of each connection. If a "
+            "Returns tool ids with input schemas and the status of each connection. Pass recent "
+            "conversation context when the task alone does not name the service. If a "
             "connection needs the user, ask them to connect it in the application; never ask "
-            "for passwords, tokens or API keys."
+            "for passwords, tokens or API keys. 'suggestions' are servers an administrator "
+            "could approve; they cannot be called."
         ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "task": {"type": "string", "minLength": 1, "maxLength": 2000},
                 "services": {"type": "array", "items": {"type": "string", "maxLength": 64}, "maxItems": 5},
+                "context": {"type": "string", "maxLength": 4000},
             },
             "required": ["task"],
             "additionalProperties": False,
@@ -82,8 +88,11 @@ class DiscoveryTools:
     def __init__(
         self, pilot: MCPilot, *, connect_wait: float | None = None,
         login_started: Callable[[str, str], Awaitable[Any]] | None = None,
+        index: CapabilityIndex | None = None,
     ) -> None:
         self.pilot = pilot
+        # Context search over approved manifests (+ registry suggestions when the catalog has them).
+        self.index = index
         self.connect_wait = connect_wait
         self.login_started = login_started
         self._pending: dict[tuple[str, str], asyncio.Task[Any]] = {}
@@ -102,14 +111,27 @@ class DiscoveryTools:
             if not validator.is_valid(arguments):
                 raise InvalidArguments("Arguments do not match the meta-tool schema")
             if name == FIND_TOOLS:
-                return await self._find(arguments["task"], tuple(arguments.get("services", ())))
+                return await self._find(arguments["task"], tuple(arguments.get("services", ())),
+                                        arguments.get("context", ""))
             return await self._call(arguments["tool_id"], arguments["arguments"])
         except MCPilotError as exc:
             # SDK errors are sanitized by construction; remote payloads never get here.
             return {"error": type(exc).__name__, "message": str(exc)}
 
-    async def _find(self, task: str, services: tuple[str, ...]) -> dict[str, Any]:
+    async def _find(self, task: str, services: tuple[str, ...], context: str = "") -> dict[str, Any]:
         plan = await self.pilot.plan(TaskRequest(task=task, services=services))
+        suggestions: list[dict[str, Any]] = []
+        if self.index is not None and (plan.missing or not plan.selections):
+            # The router's aliases did not resolve everything: search the whole context.
+            query = f"{task}\n{context}"
+            found = [self.pilot.catalog.get(h.id).service
+                     for h in self.index.search(query, tier="approved", limit=3)]
+            extra = tuple(s for s in dict.fromkeys(found) if s not in services)
+            if extra:
+                plan = await self.pilot.plan(TaskRequest(task=task, services=services + extra))
+            if plan.missing or not plan.selections:
+                suggestions = [{**h.public(), "action": "needs_admin_approval"}
+                               for h in self.index.search(query, tier="registry", limit=3)]
         pending: list[dict[str, Any]] = []
         if self.connect_wait is not None:
             plan, pending = await self._connect_in_background(plan)
@@ -129,6 +151,7 @@ class DiscoveryTools:
                            for c in connections if c["status"] in _ACTIONS],
             "unavailable": [u.model_dump() for u in plan.unavailable],
             "missing": [r.model_dump() for r in plan.missing],
+            "suggestions": suggestions,
             "truncated": toolset.truncated,
             "notice": NOTICE,
         }

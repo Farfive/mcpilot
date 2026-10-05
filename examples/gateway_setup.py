@@ -38,10 +38,12 @@ def main() -> None:
     config = write_config(target, root / "workspace")
     command = [sys.executable, "-m", "mcpilot.gateway", "--config", str(config)]
     print(f"Konfiguracja: {config}\n")
+    print("Zalecane: `python -m mcpilot setup` — klucz w pęku kluczy systemu, PAT w zaszyfrowanym magazynie,")
+    print("rejestracja w Claude Code bez sekretów. Poniższe wpisy są dla ręcznej konfiguracji innych hostów;")
+    print("nie wpisuj klucza ani PAT do pliku konfiguracji hosta.\n")
     print("Claude Code:")
-    print("  claude mcp add mcpilot -e MCPILOT_SECRET_KEY=... -e GITHUB_PAT=... -- " + " ".join(command) + "\n")
-    env = {"MCPILOT_SECRET_KEY": "<klucz Fernet z menedżera sekretów>", "GITHUB_PAT": "<opcjonalnie>"}
-    stdio = {"type": "stdio", "command": command[0], "args": command[1:], "env": env}
+    print("  claude mcp add mcpilot -- " + " ".join(command) + "\n")
+    stdio = {"type": "stdio", "command": command[0], "args": command[1:]}
     print("Cursor (.cursor/mcp.json) i inne hosty z plikiem mcpServers:")
     print(json.dumps({"mcpServers": {"mcpilot": stdio}}, indent=2, ensure_ascii=False) + "\n")
     print("VS Code (.vscode/mcp.json):")

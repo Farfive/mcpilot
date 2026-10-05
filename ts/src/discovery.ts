@@ -18,14 +18,17 @@ export const DEFINITIONS = [
   {
     name: FIND_TOOLS,
     description: "Find tools for the current task among integrations the application approved. "
-      + "Returns tool ids with input schemas and the status of each connection. If a "
+      + "Returns tool ids with input schemas and the status of each connection. Pass recent "
+      + "conversation context when the task alone does not name the service. If a "
       + "connection needs the user, ask them to connect it in the application; never ask "
-      + "for passwords, tokens or API keys.",
+      + "for passwords, tokens or API keys. 'suggestions' are servers an administrator "
+      + "could approve; they cannot be called.",
     input_schema: {
       type: "object",
       properties: {
         task: { type: "string", minLength: 1, maxLength: 2000 },
         services: { type: "array", items: { type: "string", maxLength: 64 }, maxItems: 5 },
+        context: { type: "string", maxLength: 4000 },
       },
       required: ["task"],
       additionalProperties: false,
@@ -64,7 +67,10 @@ export class DiscoveryTools {
     if (!validate) return { error: "UnknownTool", message: "Use mcpilot_find_tools or mcpilot_call_tool." };
     try {
       if (!validate(args).valid) throw new InvalidArguments("Arguments do not match the meta-tool schema");
-      if (name === FIND_TOOLS) return await this.find(args.task as string, (args.services as string[] | undefined) ?? []);
+      if (name === FIND_TOOLS) {
+        return await this.find(args.task as string, (args.services as string[] | undefined) ?? [],
+                               (args.context as string | undefined) ?? "");
+      }
       const result = await this.pilot.call(args.tool_id as string, args.arguments as Record<string, unknown>);
       return { ...result, notice: NOTICE };
     } catch (error) {
@@ -74,8 +80,12 @@ export class DiscoveryTools {
     }
   }
 
-  private async find(task: string, services: string[]): Promise<Record<string, unknown>> {
-    const plan = await this.pilot.plan({ task, services });
+  private async find(task: string, services: string[], context = ""): Promise<Record<string, unknown>> {
+    let plan = await this.pilot.plan({ task, services });
+    if (context && (!plan.selections.length || plan.missing.length)) {
+      // No search index in TypeScript yet: let the router also read the conversation context.
+      plan = await this.pilot.plan({ task: `${task}\n${context}`, services });
+    }
     const toolset = await this.pilot.toolsFor(plan);
     const connections = toolset.connections.map((c) => ({
       connection_id: c.id, integration_id: c.integration_id, account: c.account, status: c.status,
@@ -95,6 +105,7 @@ export class DiscoveryTools {
                                                            action: action(c) })),
       unavailable: plan.unavailable,
       missing: plan.missing,
+      suggestions: [],
       truncated: toolset.truncated,
       notice: NOTICE,
     };

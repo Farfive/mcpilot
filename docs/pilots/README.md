@@ -22,7 +22,20 @@ Pojedynczy przebieg potwierdza konto, nie wszystkie konfiguracje dostawcy. Rapor
 
 Zgoda na przetwarzanie: skrypt nie zapisuje treści, ale podczas przebiegu wyniki narzędzi przechodzą przez proces MCPilot w pamięci. Na kontach używamy danych testowych.
 
-## Uruchomienie
+## Instalacja u uczestnika pilotażu (Claude Code)
+
+```sh
+pip install './mcpilot-0.1.0-py3-none-any.whl[keychain]'   # wheel z artefaktów CI (sprawdź SHA256SUMS)
+python -m mcpilot setup --github-pat-prompt     # opcjonalnie --workspace <katalog z dokumentacją>
+# Claude Code: „Znajdź w Notion dokumentację projektu i porównaj z issue w GitHub”
+python -m mcpilot status                        # co jest połączone (bez tokenów)
+python -m mcpilot disconnect notion             # odłączenie; instrukcja cofnięcia u dostawcy
+python -m mcpilot uninstall --purge             # koniec pilotażu
+```
+
+Klucz szyfrujący trafia do pęku kluczy systemu, PAT GitHub do zaszyfrowanego magazynu, a konfiguracja Claude Code nie zawiera sekretów. Przy pierwszym użyciu Notion otwiera się przeglądarka; kolejne sesje korzystają z zapisanego dostępu. Zdarzenia trafiają do `~/.mcpilot/pilot/audit.jsonl`, a metryki pilotażu liczy `python -m mcpilot.metrics ~/.mcpilot/pilot/audit.jsonl`.
+
+## Przebieg certyfikacyjny (protokół)
 
 ```sh
 export MCPILOT_SECRET_KEY=$(python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")

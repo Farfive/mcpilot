@@ -1,0 +1,19 @@
+{
+ "about": "Labelled context → MCP queries for python -m mcpilot.search --eval. Registry snapshot 2026-10-04 (40 209 entries) plus the approved pilot manifest (Notion, GitHub, local files). 'expect_any': one of these ids; '~text': any id containing text; 'expect_all': every id in the top 5.",
+ "cases": [
+  {"query": "Znajdź dokumentację projektu w Notion i porównaj z issue w GitHub", "expect_all": ["com.notion/mcp", "com.github/remote"]},
+  {"query": "porównaj tickety w jirze z dokumentacją w confluence", "expect_any": ["com.atlassian/atlassian-mcp-server"]},
+  {"query": "sprawdź płatności i faktury klientów w stripe", "expect_any": ["com.stripe/mcp"]},
+  {"query": "lista zadań w Linear przypisanych do mnie", "expect_any": ["app.linear/linear"]},
+  {"query": "deploy status of my vercel project", "expect_any": ["com.vercel/vercel-mcp"]},
+  {"query": "query tables in my airtable base", "expect_any": ["com.airtable/mcp"]},
+  {"query": "show rows from the supabase database", "expect_any": ["com.supabase/mcp"]},
+  {"query": "otwarte merge requesty w gitlabie", "expect_any": ["com.gitlab/mcp"]},
+  {"query": "tablica monday z zadaniami zespołu", "expect_any": ["com.monday/monday.com"]},
+  {"query": "read microsoft learn documentation about azure functions", "expect_any": ["com.microsoft/microsoft-learn-mcp"]},
+  {"query": "Przeczytaj lokalny plik README", "expect_any": ["mcpilot/filesystem"]},
+  {"query": "wyślij podsumowanie na kanał slack", "expect_any": ["~slack"]},
+  {"query": "query the postgres database for active users", "expect_any": ["~postgres"]},
+  {"query": "review comments on github pull requests", "expect_any": ["com.github/remote", "io.github.github/github-mcp-server"]}
+ ]
+}

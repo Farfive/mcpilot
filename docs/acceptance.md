@@ -10,7 +10,7 @@ Stan na **2026-10-04**. Każde kryterium ma status i dowód, który można uruch
 | **Wymaga konta** | Kod i konfiguracja gotowe; brak testu na koncie dostawcy lub kluczu API. |
 
 ```sh
-python -m pytest                                        # 89 testów lokalnych + 1 opcjonalny sieciowy
+python -m pytest                                        # 96 testów lokalnych + 1 opcjonalny sieciowy
 MCPILOT_NETWORK_TESTS=1 python -m pytest tests/test_network.py
 ruff check .
 (cd ts && npm test)                                     # 18 testów TypeScript, w tym z serwerami Python
@@ -107,6 +107,22 @@ scripts/ci.sh                                           # lokalny odpowiednik CI
 | 49 | Prawdziwy host: Claude Code 2.1.284 → brama stdio i brama HTTP z tokenem hosta → odczyt | E2E lokalnie | `spec/hosts/*.jsonl`, [docs/hosts.md](hosts.md) |
 | 50 | Cursor, VS Code (Copilot) | nie zweryfikowano (dokumentacja w [hosts.md](hosts.md)) | checklista ręczna w [hosts.md](hosts.md) |
 | 51 | CI: ruff + pytest (Python 3.11–3.13), `npm test` (Node 20/22) z serwerami Python, artefakty z `SHA256SUMS`; spójna wersja Python/TS/CHANGELOG | E2E lokalnie (`scripts/ci.sh`, pytest na 3.11.13 i 3.13); workflow GitHub Actions zaimplementowany, ale nieuruchomiony (brak zdalnego repozytorium) | `.github/workflows/ci.yml`, `scripts/build_artifacts.sh`, `test_release.py` |
+
+## Pakiet pilotażowy (Claude Code)
+
+| # | Kryterium | Status | Dowód |
+| --- | --- | --- | --- |
+| 52 | `python -m mcpilot setup`: manifest, klucz w pęku kluczy systemu, zaszyfrowany PAT, rejestracja w Claude Code bez sekretów w konfiguracji hosta i bez nadpisania istniejącego wpisu | E2E lokalnie (prawdziwy macOS Keychain i Claude Code 2.1.284; GitHub jako lokalna atrapa) | `test_cli.py`, przebieg opisany w [hosts.md](hosts.md) |
+| 53 | Restart hosta nie wymaga ponownego logowania: dwie sesje Claude Code korzystają z zapisanego dostępu | E2E lokalnie (atrapa dostawcy); na kontach: Wymaga konta | `test_pilot_kit_end_to_end_without_secrets_in_host_config`, audyt w [hosts.md](hosts.md) |
+| 54 | `status` bez tokenów, `disconnect` usuwa dostęp (kolejne użycie → `connect_account`) i podaje instrukcję cofnięcia u dostawcy, `uninstall` usuwa rejestrację i klucz; brama bez klucza ostrzega, że tokeny są tylko w pamięci | E2E lokalnie | `test_cli.py` |
+
+## Dobór MCP z kontekstu
+
+| # | Kryterium | Status | Dowód |
+| --- | --- | --- | --- |
+| 55 | Wyszukiwanie w kontekście: odmiana nazw produktów, intencja dostawcy, pokrycie wielu wątków, kara dla `deprecated`, brak usuniętych; sugestie bez endpointów | E2E lokalnie | `test_search.py` |
+| 56 | Router nie zna usługi → indeks znajduje zatwierdzoną integrację z `context`; brak zatwierdzonej → `suggestions` z `needs_admin_approval`, niewywoływalne | E2E lokalnie | `test_search::test_discovery_uses_context_search_for_unaliased_services_and_suggests_registry` |
+| 57 | Trafność i szybkość na prawdziwym rejestrze (39 321 wpisów): zestaw odłożony — pierwszy pomiar 10/12 w pierwszej trójce, mediana zapytania ok. 10 ms | E2E sieć (ręcznie, 2026-10-05; cache rejestru nie jest w repozytorium) | [search.md](search.md), `spec/search_eval*.json` |
 
 ## Wymaga kont dostawców
 

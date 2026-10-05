@@ -93,6 +93,8 @@ Model nie dostaje katalogu. Host ma dwie drogi:
 - **Bezpośrednio:** `tools_for()` zwraca tylko narzędzia wybrane dla zadania, w budżecie `Limits.tool_tokens` (domyślny licznik liczy bajty UTF-8, czyli konserwatywnie). Host może podać własny `token_counter`.
 - **Warstwa discovery:** `DiscoveryTools` udostępnia `mcpilot_find_tools` (zadanie, opcjonalnie nazwy usług) i `mcpilot_call_tool` (ID narzędzia, argumenty). Schematy pobierane są tylko dla wybranych integracji. Argumenty meta-narzędzi są walidowane, a nieznane pola odrzucane. Odpowiedź zawiera statusy i kody akcji (`connect_account`, `finish_login`, `admin_setup`), nigdy URL, tokeny ani endpointy. Przy `connect_wait` logowanie trwające dłużej daje `auth_pending` i kończy się w tle, więc pętla agenta nie stoi.
 
+Gdy aliasy routera nie rozpoznają usługi, `mcpilot_find_tools` przeszukuje cały kontekst (`task` + opcjonalne `context`) indeksem BM25 z obsługą polskiej odmiany i intencji dostawcy, a dla braków zwraca sugestie z rejestru do zatwierdzenia przez administratora: [search.md](search.md).
+
 Opisy narzędzi są obcinane do 2000 znaków. Wyniki ograniczają `max_result_bytes`. Odpowiedzi zawierają `untrusted: true` i informację, że nie zmieniają zasad aplikacji. Uprawnienia egzekwuje kod polityki, niezależnie od treści przekazanej modelowi.
 
 ## Wykonywanie i workflow

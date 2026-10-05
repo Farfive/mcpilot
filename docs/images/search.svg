@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+  <rect width="1200" height="640" fill="#ffffff"/>
+  <text x="40" y="48" font-size="26" font-weight="700" fill="#0f172a">Finding the right MCP server for the whole conversation</text>
+  <text x="40" y="74" font-size="15" fill="#64748b">No model call and no network at query time: a prebuilt index answers in milliseconds, even over ~39k registry entries.</text>
+
+  <g font-size="13" fill="#475569">
+    <rect x="40" y="110" width="200" height="170" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="56" y="138" font-size="15" font-weight="700" fill="#0f172a">Context</text>
+    <text x="56" y="162">task + recent messages</text>
+    <text x="56" y="194" fill="#334155" font-style="italic">“porównaj tickety</text>
+    <text x="56" y="212" fill="#334155" font-style="italic">w jirze z dokumentacją</text>
+    <text x="56" y="230" fill="#334155" font-style="italic">w confluence”</text>
+
+    <rect x="280" y="110" width="200" height="170" rx="12" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="296" y="138" font-size="15" font-weight="700" fill="#3730a3">1 Normalize</text>
+    <text x="296" y="162">lowercase, fold diacritics</text>
+    <text x="296" y="182">drop stop words and</text>
+    <text x="296" y="202">verbs (find, compare…)</text>
+    <text x="296" y="222">exact words + 6-char</text>
+    <text x="296" y="242">stems (PL / EN)</text>
+
+    <rect x="520" y="110" width="200" height="170" rx="12" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="536" y="138" font-size="15" font-weight="700" fill="#3730a3">2 Expand</text>
+    <text x="536" y="162">concept synonyms</text>
+    <text x="536" y="182">ticket ↔ issue ↔ zgłoszenie</text>
+    <text x="536" y="202">Polish declension of</text>
+    <text x="536" y="222">product names:</text>
+    <text x="536" y="242" fill="#4f46e5">jirze → jira, slacka → slack</text>
+
+    <rect x="760" y="110" width="200" height="170" rx="12" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="776" y="138" font-size="15" font-weight="700" fill="#3730a3">3 BM25F index</text>
+    <text x="776" y="162">field weights:</text>
+    <text x="776" y="182">name, service ×3</text>
+    <text x="776" y="202">tools, capabilities ×2</text>
+    <text x="776" y="222">description ×1</text>
+    <text x="776" y="242">built once per sync</text>
+
+    <rect x="1000" y="110" width="160" height="170" rx="12" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="1016" y="138" font-size="15" font-weight="700" fill="#3730a3">4 Rank</text>
+    <text x="1016" y="162">named vendor's</text>
+    <text x="1016" y="182">official server first</text>
+    <text x="1016" y="202">approved bonus</text>
+    <text x="1016" y="222">deprecated penalty</text>
+    <text x="1016" y="242">cover every intent</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none">
+    <path d="M240 195 L276 195" marker-end="url(#a)"/><path d="M480 195 L516 195" marker-end="url(#a)"/>
+    <path d="M720 195 L756 195" marker-end="url(#a)"/><path d="M960 195 L996 195" marker-end="url(#a)"/>
+  </g>
+
+  <!-- Corpus -->
+  <rect x="520" y="320" width="440" height="96" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="536" y="348" font-size="15" font-weight="700" fill="#0f172a">Indexed corpus</text>
+  <text x="536" y="372" font-size="13" fill="#334155">Approved manifests (executable) + router aliases</text>
+  <text x="536" y="394" font-size="13" fill="#64748b">MCP Registry entries — names and descriptions only, no endpoints</text>
+  <path d="M860 320 L860 284" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+
+  <!-- Outputs -->
+  <path d="M1080 280 L1080 450 L760 450" stroke="#475569" stroke-width="2" fill="none"/>
+  <path d="M760 450 L520 450 L520 470" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M1080 450 L1080 470" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <rect x="300" y="476" width="440" height="120" rx="12" fill="#f0fdfa" stroke="#5eead4"/>
+  <text x="316" y="504" font-size="15" font-weight="700" fill="#115e59">Approved → tools</text>
+  <text x="316" y="528" font-size="13" fill="#334155">Resolved services are routed, policy-checked and connected;</text>
+  <text x="316" y="548" font-size="13" fill="#334155">the model receives only the needed tool schemas.</text>
+  <text x="316" y="574" font-size="13" fill="#0f766e" font-family="SFMono-Regular, Menlo, Consolas, monospace">com.notion/mcp  com.github/remote</text>
+  <rect x="780" y="476" width="380" height="128" rx="12" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="796" y="504" font-size="15" font-weight="700" fill="#9a3412">Registry → suggestions</text>
+  <text x="796" y="528" font-size="13" fill="#7c2d12">Top 3 with action needs_admin_approval.</text>
+  <text x="796" y="548" font-size="13" fill="#7c2d12">Never executable until an administrator</text>
+  <text x="796" y="568" font-size="13" fill="#7c2d12">approves a manifest and tool mapping.</text>
+  <text x="796" y="586" font-size="13" fill="#c2410c" font-family="SFMono-Regular, Menlo, Consolas, monospace">com.atlassian/atlassian-mcp-server</text>
+
+  <!-- Metrics -->
+  <rect x="40" y="320" width="440" height="128" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="56" y="348" font-size="15" font-weight="700" fill="#0f172a">Measured on the live registry (2026-10-04)</text>
+  <text x="56" y="374" font-size="13" fill="#334155">39,321 entries · index build ≈ 0.7 s · query median ≈ 10 ms</text>
+  <text x="56" y="398" font-size="13" fill="#334155">Held-out set, first run: 10/12 in top-3, 8/12 at #1</text>
+  <text x="56" y="420" font-size="12" fill="#94a3b8">Small, author-written sets; real accuracy needs pilot queries.</text>
+</svg>

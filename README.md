@@ -1,80 +1,252 @@
+<div align="center">
+
 # MCPilot
 
-Asynchroniczne Python SDK, które daje agentowi LLM dostęp do serwerów Model Context Protocol: zadanie → dobór integracji → autoryzacja → tylko potrzebne narzędzia → wykonanie. Host dostarcza model, pętlę agenta, uwierzytelnionego użytkownika i interfejs logowania. Gdy brakuje dostępu, użytkownik dostaje przycisk połączenia konta, a zadanie wznawia się po zalogowaniu.
+**Give your agent the right MCP tools for the task — not the whole catalog.**
 
-Import biblioteki nie instaluje pakietów, nie otwiera połączeń i nie uruchamia procesów. MVP korzysta z oficjalnego `mcp==2.3.0` i Python 3.11+.
+MCPilot picks the approved [Model Context Protocol](https://modelcontextprotocol.io) servers a task needs,
+signs the user in once, and exposes only the tools that task requires — with policy enforced in code.
 
-## Uruchomienie
+[![CI](https://github.com/Farfive/mcpilot/actions/workflows/ci.yml/badge.svg)](https://github.com/Farfive/mcpilot/actions/workflows/ci.yml)
+![Status](https://img.shields.io/badge/status-technical%20pilot-orange)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
+![TypeScript](https://img.shields.io/badge/typescript-SDK-3178c6)
+![MCP](https://img.shields.io/badge/MCP-2026--07--28-4f46e5)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+[How it works](#how-it-works) ·
+[Quick start](#quick-start-claude-code) ·
+[Finding the right MCP](#finding-the-right-mcp-for-the-conversation) ·
+[Security](#security-model) ·
+[Status](#project-status) ·
+[Docs (Polish)](docs/README.pl.md)
+
+</div>
+
+---
+
+> [!IMPORTANT]
+> **MCPilot is a technical pilot, not a production service.** The protocol paths (MCP over stdio and
+> Streamable HTTP, MCP OAuth with PKCE, durable workflows) are tested end to end with real servers on
+> loopback and with Claude Code. **No run against real Notion or GitHub accounts has been recorded yet.**
+> See [Project status](#project-status) for exactly what is verified and how.
+
+## Why MCPilot
+
+Connecting an LLM agent to MCP servers today means finding servers, copying install commands, editing
+host config, pasting tokens, and loading every tool into the model's context. MCPilot turns that into:
+
+1. The user states a goal: *“Compare the project docs in Notion with the open GitHub issues.”*
+2. MCPilot works out which **approved** integrations the task needs and checks policy.
+3. If an account is missing, the user gets a **sign-in button / browser page**. The model never sees tokens or login URLs.
+4. The model receives **only the tools for this task**, validated and budgeted, and the task resumes.
+
+It ships as an **async Python SDK**, a **TypeScript SDK** with the same data contract, and an optional
+**MCP gateway** so existing hosts (Claude Code, Cursor, VS Code…) can use it through a single connection.
+
+## How it works
+
+![MCPilot architecture](docs/images/architecture.svg)
+
+| Component | What it does |
+| --- | --- |
+| **Discovery layer** | The model sees two meta-tools, `mcpilot_find_tools` and `mcpilot_call_tool`, instead of hundreds of tool schemas. Step and cost budgets apply per task. |
+| **Context search** | A BM25F index over approved manifests and the MCP Registry maps the conversation to integrations (Polish and English, product-name inflection, vendor intent). |
+| **Router + policy** | Only host-approved manifests, pinned by a SHA-256 fingerprint, can run. Accounts, capabilities, OAuth scopes and effects (`read`, `draft`, `write`, `send`) are enforced in code. |
+| **Auth manager** | MCP authorization: protected-resource discovery, client registration, PKCE, minimal scopes, refresh, revoke. Also personal access tokens and API keys. |
+| **Runtime** | MCP sessions over stdio (local processes) and Streamable HTTP (remote servers), with timeouts, health checks and clean shutdown. Uncertain writes are never replayed. |
+| **Audit + metrics** | JSON Lines events with tenant, task, outcome and duration — never arguments, results or credentials. |
+
+### From a request to an answer
+
+![Request flow](docs/images/request-flow.svg)
+
+### Connecting an account once
+
+![Login flow](docs/images/login-flow.svg)
+
+## Quick start (Claude Code)
+
+The local gateway is verified with Claude Code. MCPilot is **not published to PyPI**: install from this
+repository or from a CI artifact, and check its `SHA256SUMS`.
 
 ```sh
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-python -m pytest
-scripts/ci.sh        # pełny zestaw jak w CI: ruff, pytest, testy TypeScript, artefakty w dist/
+git clone https://github.com/Farfive/mcpilot.git && cd mcpilot
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e '.[keychain]'
+
+# Notion + GitHub (+ optional read-only local folder), registered in Claude Code
+python -m mcpilot setup --github-pat-prompt --workspace ~/docs
 ```
 
-| Przykład | Co pokazuje | Status |
-| --- | --- | --- |
-| `python examples/local_task.py` | Zadanie → lokalny serwer stdio → odczyt pliku | E2E lokalnie |
-| `python -m examples.notion_github_task` | Flagowe zadanie Notion + GitHub: wcześniej podłączone konto, przycisk logowania, wznowienie workflow, szkic podsumowania, ponowne użycie po restarcie | Demonstracyjne |
-| `python -m examples.oauth_demo` | OAuth (discovery, DCR, PKCE) przez Streamable HTTP i ponowne użycie tokenu | Demonstracyjne |
-| `python examples/langchain_tools.py` | Adapter LangChain (`pip install -e '.[langchain]'`) | E2E lokalnie |
-| `python -m examples.claude_agent` | Pętla agenta z Claude na dwóch meta-narzędziach (`pip install -e '.[agent]'`) | Wymaga klucza API |
-| `python examples/gateway_setup.py` | Konfiguracja lokalnej bramy MCP (stdio) dla Claude Code i hostów `mcpServers` | E2E lokalnie (filesystem), konta dla GitHub/Notion |
-| `python -m examples.remote_gateway_demo` | Zdalna brama dla wielu użytkowników: token hosta, izolacja, logowanie przez elicytację URL, odrzucenie przekazanego linku | Demonstracyjne |
-| `python -m mcpilot.pilot --manifest … --integration … --tool …` | Protokół pilotażu na prawdziwym koncie (logowanie, odczyt, ponowne użycie, odświeżenie, cofnięcie) z raportem bez sekretów | Wymaga konta ([docs/pilots](docs/pilots/README.md)) |
-| `python -m mcpilot.metrics audit.jsonl` | Metryki pilotażu z dziennika audytu bram (`audit_log`) | E2E lokalnie |
-| `cd ts && npm install && npm test && npm run example` | TypeScript SDK: wektory zgodności z Pythonem, stdio/HTTP z serwerami Python, OAuth, klient TS ↔ brama Python | E2E lokalnie / Demonstracyjne |
+`setup` keeps every secret out of the host configuration:
 
-**E2E lokalnie**: prawdziwe procesy i protokół, bez usług zewnętrznych. **Demonstracyjne**: prawdziwe MCP/HTTP/OAuth, symulowany dostawca, zgoda użytkownika lub model. **Wymaga konta**: kod gotowy, brak testu na koncie dostawcy. Pełna lista kryteriów z dowodami: [docs/acceptance.md](docs/acceptance.md).
+- **Encryption key** → OS keychain (macOS Keychain, Windows Credential Locker, Secret Service).
+- **GitHub token** → encrypted store, typed into a hidden prompt (never a command-line argument).
+- **Claude Code** → `claude mcp add` with no environment secrets. An existing entry is never overwritten.
 
-## API
+Then, in Claude Code:
+
+> *Find the project documentation in Notion and compare it with the open GitHub issues.*
+
+The first use of Notion opens your browser to sign in. Later sessions reuse the stored access.
+
+```sh
+python -m mcpilot status              # what is connected (no tokens shown)
+python -m mcpilot disconnect notion   # remove local access + how to revoke at the provider
+python -m mcpilot uninstall --purge   # unregister and delete the keychain key
+```
+
+## Finding the right MCP for the conversation
+
+![Search pipeline](docs/images/search.svg)
+
+When the router's built-in aliases do not name a service, `mcpilot_find_tools` searches the whole context.
+You can pass `context` with the recent conversation. Matches split into two tiers:
+
+- **Approved integrations** — connected and returned as tools.
+- **Other MCP Registry servers** — returned as `suggestions` with `needs_admin_approval`. They carry no
+  endpoint, package or command, so the model cannot run them.
+
+```sh
+python -m mcpilot.search "compare jira tickets with the confluence docs" --cache registry-cache.json
+python -m mcpilot.search --eval spec/search_eval_holdout.json --cache registry-cache.json --manifest approved.json
+```
+
+**Measured on the live registry (39,321 entries):**
+
+| Metric | Result |
+| --- | --- |
+| Index build | ≈ 0.7 s |
+| Query time (median) | ≈ 10 ms |
+| Held-out queries, first run | 10/12 in the top three, 8/12 ranked first |
+
+These sets are small and author-written; real accuracy will come from pilot queries. Details: [docs/search.md](docs/search.md).
+
+## Use it as a library
+
+**Python**
 
 ```python
 from mcpilot import MCPilot, Policy
 from mcpilot.catalog import Catalog
 from mcpilot.integrations import filesystem
 
-integration = filesystem("./examples/workspace")
-policy = Policy(approved=[integration], capabilities=["files.read"])
+files = filesystem("./examples/workspace")
+policy = Policy([files], capabilities=["files.read"])
 
-async with MCPilot(user_id="user-123", catalog=Catalog([integration]), policy=policy) as pilot:
-    plan = await pilot.plan("Przeczytaj lokalny plik README")
-    tools = await pilot.tools_for(plan)          # tylko narzędzia dla tego zadania
-    reader = next(t for t in tools.tools if t.name == "read_file")
-    result = await pilot.call(reader.id, {"path": "README.md"})
+async with MCPilot(user_id="user-123", catalog=Catalog([files]), policy=policy) as pilot:
+    toolset = await pilot.tools_for("Read the local README")        # only the tools this task needs
+    reader = next(t for t in toolset.tools if t.name == "read_file")
+    result = await pilot.call(reader.id, {"path": "README.md"})       # schema-validated, budgeted, audited
 ```
 
-Publiczne API: `discover`, `plan`, `connect`, `tools_for`, `call`, `status`, `disconnect`. Ponadto `WorkflowRunner` (trwałe zadania wielu integracji ze wznowieniem), `LoginBroker` (przycisk logowania i trasa callback hosta), `DiscoveryTools` (dwa meta-narzędzia dla modelu zamiast katalogu), `python -m mcpilot.gateway` (brama MCP: lokalna stdio albo zdalna HTTP dla wielu użytkowników) oraz [TypeScript SDK](docs/typescript.md) w `ts/` z tym samym kontraktem danych. Jeden obiekt `MCPilot` należy do jednego użytkownika zweryfikowanego przez hosta; model nie ustala `user_id`, adresów ani poleceń.
+**TypeScript** (`ts/`, Node 20+, built on `@modelcontextprotocol/client`)
 
-## Status funkcji
+```ts
+import { Catalog, MCPilot, Policy, parseIntegration } from "@mcpilot/sdk";
 
-| Obszar | Działa | Uwagi |
+const notion = parseIntegration(manifestJson);   // same manifest JSON as Python
+const pilot = new MCPilot({
+  userId,
+  catalog: new Catalog([notion]),
+  policy: new Policy([notion], { capabilities: ["documents.search"] }),
+});
+const tools = await pilot.toolsFor("Find the project docs in Notion");
+```
+
+Public API: `discover`, `plan`, `connect`, `toolsFor` / `tools_for`, `call`, `status`, `disconnect`.
+
+The library also includes:
+
+- `WorkflowRunner` — durable multi-step tasks that resume after sign-in;
+- `LoginBroker` — sign-in buttons and the host's callback route;
+- `DiscoveryTools` — the two meta-tools for any agent loop;
+- a LangChain adapter;
+- a Claude agent example (`claude-opus-5-5`).
+
+## Gateways
+
+| Gateway | Transport | Users | Sign-in |
+| --- | --- | --- | --- |
+| Local — `python -m mcpilot.gateway` | stdio | one | browser + loopback callback |
+| Remote — `"transport": "http"` | Streamable HTTP | many; JWT from your IdP, per-tenant policy | MCP URL elicitation to a `/connect` page that verifies the browser's identity |
+
+The remote gateway isolates users and tenants. Each user gets their own sessions, processes and tool ids.
+It also applies per-user rate limits and closes idle sessions. Configuration: [docs/gateway.md](docs/gateway.md).
+
+## Security model
+
+- **Registry data is never executable.** Only manifests approved by the host can run, and changing a manifest invalidates its approval.
+- **Secrets stay out of the model, logs, errors and audit events.** Login URLs go only to the user's browser or host UI.
+- **Least privilege.** OAuth scopes come from the capabilities in the plan. Scope escalation requires a policy change. Read-only is the default.
+- **Untrusted output.** Tool descriptions and results are data, not instructions. Arguments and structured outputs are validated with JSON Schema.
+- **Safe execution.** A write that times out is reported as `UncertainOutcome` and never retried automatically.
+- **Hardened endpoints.** HTTPS and public addresses only, IANA special ranges blocked, no redirects. Legacy IPv4 forms and `*.localhost` are rejected.
+
+Residual risks are documented in [SECURITY.md](SECURITY.md). For example, dependency isolation is not an OS sandbox.
+
+## Project status
+
+Every claim is labelled by evidence. The full list of 57 criteria with the tests that prove them is in
+[docs/acceptance.md](docs/acceptance.md).
+
+| Area | Status | Evidence |
 | --- | --- | --- |
-| Transporty stdio i Streamable HTTP | E2E lokalnie | Timeouty, health check, zamykanie procesów, oczyszczone środowisko |
-| Instalacja przypiętych pakietów | E2E sieć (oficjalny filesystem z npm) | Izolacja zależności, nie sandbox systemu |
-| Katalog: oficjalny Registry, prywatne rejestry, cache | E2E sieć (40 209 wpisów, synchronizacja przyrostowa) | Wpisy rejestru nigdy nie są wykonywalne bez manifestu hosta |
-| Router z kontekstu, polityka, reranker | E2E lokalnie | Reranker może wybrać tylko kwalifikującego się kandydata |
-| OAuth MCP, PAT/klucz API, odświeżanie, cofanie, wiele kont | Demonstracyjne / E2E lokalnie | Prawdziwe logowanie Notion i PAT GitHub: wymaga konta |
-| Workflow, limity, brak powtórzeń zapisu | E2E lokalnie / Demonstracyjne | Niepewne mutacje wymagają rekoncyliacji |
-| Brama MCP lokalna (stdio) | E2E lokalnie | Jeden użytkownik, przeglądarka + callback na loopback; zweryfikowana w Claude Code ([hosty](docs/hosts.md)) |
-| Brama MCP zdalna (HTTP, wielu użytkowników) | E2E lokalnie / Demonstracyjne | JWT hosta, tenanty, limity, elicytacja URL; IdP organizacji: wymaga konta |
-| TypeScript SDK | E2E lokalnie / Demonstracyjne | Zgodność z Pythonem potwierdzona wspólnymi wektorami |
-| Google Drive, Slack | `setup_required` | Wymagają aplikacji OAuth i zgody administratora |
+| stdio + Streamable HTTP, policy, budgets, no write replay | ✅ End to end, local | real MCP servers on loopback |
+| Claude Code as host (stdio + HTTP gateway, `mcpilot setup`) | ✅ End to end, local | live runs with the real macOS Keychain ([docs/hosts.md](docs/hosts.md)) |
+| Official GitHub MCP server tool names | ✅ Network | `github-mcp-server` v1.14.0 `tools/list` ([snapshot](spec/providers/github-mcp-server-1.14.0.json)) |
+| MCP Registry sync, 40k entries, incremental | ✅ Network | live registry |
+| MCP OAuth (PKCE, DCR, refresh), sign-in button, URL elicitation | 🟡 Demonstrated | fixture identity provider, real protocol |
+| Python ↔ TypeScript parity | ✅ End to end, local | shared vectors ([spec/vectors.json](spec/vectors.json)) |
+| Notion and GitHub on real accounts | ⏳ Needs accounts | protocol runner ready: `python -m mcpilot.pilot` ([docs/pilots](docs/pilots/README.md)) |
+| Cursor, VS Code | ⏳ Not verified | documented config only |
+| Google Drive, Slack | ⏳ `setup_required` | provider OAuth apps and admin approval needed |
+| Multi-instance gateway, KMS, monitoring | ❌ Not built | roadmap |
 
-## Dokumentacja
+## Repository layout
 
-- [Architektura, modele danych, API, kontekst LLM, bezpieczeństwo](docs/architecture.md)
-- [Autoryzacja, przepływ logowania, integracja interfejsu hosta](docs/auth.md)
-- [Katalog i synchronizacja](docs/catalog.md)
-- [Weryfikacja GitHub, Notion, Google Drive, Slack i filesystem](docs/integrations.md)
-- [Brama MCP (lokalna i zdalna), elicytacja URL, konfiguracja hostów](docs/gateway.md)
-- [TypeScript SDK i zgodność z Pythonem](docs/typescript.md)
-- [Zgodność hostów MCP (Claude Code, Cursor, VS Code)](docs/hosts.md)
-- [Pilotaż na prawdziwych kontach: definicja integracji wspieranej, raporty](docs/pilots/README.md)
-- [Zmiany](CHANGELOG.md) i [bezpieczeństwo](SECURITY.md)
-- [Kryteria odbioru i status weryfikacji](docs/acceptance.md)
-- [Model biznesowy i plan wydań](docs/product.md)
+```
+src/mcpilot/      Python SDK: sdk, router, policy, catalog, auth, runtime, workflow,
+                  discovery, search, gateway (local), remote (multi-user), cli, pilot, metrics
+ts/               TypeScript SDK (@mcpilot/sdk) with Node-only extras in @mcpilot/sdk/node
+spec/             Cross-language vectors, provider tool snapshots, host evidence, search eval sets
+tests/            pytest suite (96 tests) — real MCP servers over stdio/HTTP, OAuth fixtures
+examples/         Flagship Notion + GitHub demo, OAuth demo, remote gateway demo, Claude agent
+docs/             Architecture, auth, gateway, search, hosts, pilots, acceptance (Polish)
+```
 
-Nie deklarujemy pełnego pokrycia serwerów MCP. Manifest hosta określa endpoint lub pakiet, przypiętą wersję, mapowanie narzędzi na uprawnienia i skutki ich użycia; dopiero wtedy integracja staje się wykonywalna.
+## Development
+
+```sh
+pip install -e '.[dev]'
+scripts/ci.sh            # ruff, pytest, TypeScript tests against Python servers, build artifacts
+```
+
+CI runs Python 3.11–3.13 and Node 20/22, and builds wheel, sdist and npm tarballs with `SHA256SUMS`.
+
+## Roadmap
+
+1. **Pilot:** read-only Notion + GitHub on real accounts in Claude Code, using the recorded protocol reports.
+2. **Remote gateway beyond one instance:** shared login state, a KMS/Vault `SecretStore`, metrics and tracing.
+3. **Team features:** managed OAuth apps, an admin API for connections and approvals, audit export and retention.
+4. **More integrations:** Google Drive and Slack once provider requirements are met; a reviewed path from registry suggestion to approved manifest.
+
+## Documentation
+
+Detailed docs are in Polish:
+
+- [Architecture](docs/architecture.md)
+- [Authorization](docs/auth.md)
+- [Gateways](docs/gateway.md)
+- [Search](docs/search.md)
+- [Hosts](docs/hosts.md)
+- [Integrations](docs/integrations.md)
+- [Pilots](docs/pilots/README.md)
+- [Acceptance criteria](docs/acceptance.md)
+- [Product and business model](docs/product.md)
+- [TypeScript](docs/typescript.md)
+
+## License
+
+[MIT](LICENSE) © 2026 MCPilot contributors

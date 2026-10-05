@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import json
 import os
 import sys
@@ -36,11 +37,14 @@ from .auth import (
     LoginBroker,
     MemorySecretStore,
     OAuthConfig,
+    SecretStore,
 )
 from .catalog import Catalog
 from .discovery import CALL_TOOL, DEFINITIONS, FIND_TOOLS, DiscoveryTools
+from .keys import resolve_key
 from .policy import Policy
 from .sdk import MCPilot
+from .search import CapabilityIndex
 
 
 def create_gateway(tools: DiscoveryTools, *, name: str = "MCPilot gateway") -> MCPServer:
@@ -128,10 +132,13 @@ class GatewayConfig:
     state_dir: Path = Path("~/.mcpilot")
     allow_loopback: bool = False
     key_env: str = "MCPILOT_SECRET_KEY"
+    keychain_item: str | None = None  # OS keychain entry (service "mcpilot") holding the Fernet key
     login_port: int = 8765
     connect_wait: float = 15.0
     secrets: dict[str, str] = field(default_factory=dict)  # integration id -> env var with a PAT
     audit_log: Path | None = None  # JSON Lines audit events (no arguments, results or secrets)
+    registry_sync: bool = False  # keep the MCP Registry cache fresh for search suggestions
+    registry_sync_interval: float = 3600.0
 
     @classmethod
     def load(cls, path: str | Path) -> GatewayConfig:
@@ -150,11 +157,35 @@ class GatewayConfig:
             state_dir=(base / Path(raw.get("state_dir", "~/.mcpilot")).expanduser()).resolve(),
             allow_loopback=bool(raw.get("allow_loopback", False)),
             key_env=str(raw.get("key_env", cls.key_env)),
+            keychain_item=str(raw["keychain_item"]) if raw.get("keychain_item") else None,
             login_port=int(raw.get("login_port", cls.login_port)),
             connect_wait=float(raw.get("connect_wait", cls.connect_wait)),
             secrets=dict(raw.get("secrets", {})),
             audit_log=(base / Path(raw["audit_log"]).expanduser()).resolve() if raw.get("audit_log") else None,
+            registry_sync=bool(raw.get("registry_sync", False)),
+            registry_sync_interval=float(raw.get("registry_sync_interval", cls.registry_sync_interval)),
         )
+
+
+def open_store(config: GatewayConfig, *, warn: bool = True) -> SecretStore:
+    """Encrypted store with the key from the environment or the OS keychain; memory otherwise."""
+    key, source = resolve_key(config.key_env, config.keychain_item)
+    if key is None:
+        if warn:
+            # stderr only: stdout carries the MCP protocol.
+            print(f"MCPilot: {source}; tokens stay in memory and every restart needs a new login",
+                  file=sys.stderr)
+        return MemorySecretStore()
+    return EncryptedFileSecretStore(config.state_dir / "credentials", key)
+
+
+async def _refresh_registry(catalog: Catalog, tools: DiscoveryTools, config: GatewayConfig) -> None:
+    """Background registry sync (full once, then incremental) and index rebuild; failures keep the cache."""
+    while True:
+        with contextlib.suppress(Exception):
+            await catalog.sync()
+            tools.index = await asyncio.to_thread(CapabilityIndex.from_catalog, catalog)
+        await asyncio.sleep(config.registry_sync_interval)
 
 
 async def serve(config: GatewayConfig) -> None:
@@ -162,8 +193,7 @@ async def serve(config: GatewayConfig) -> None:
     catalog.load_manifest(config.manifest)
     policy = Policy(catalog.all(), capabilities=config.capabilities, effects=config.effects,
                     accounts=config.accounts, allow_loopback=config.allow_loopback)
-    key = os.environ.get(config.key_env)
-    store = EncryptedFileSecretStore(config.state_dir / "credentials", key.encode()) if key else MemorySecretStore()
+    store = open_store(config)
     login = LoopbackLogin(config.user_id, port=config.login_port)
     auth = AuthManager(store, OAuthConfig(login=login.broker, redirect_uri=login.redirect_uri))
     for integration_id, env_var in config.secrets.items():
@@ -175,10 +205,16 @@ async def serve(config: GatewayConfig) -> None:
         async with MCPilot(user_id=config.user_id, catalog=catalog, policy=policy, auth=auth,
                            state_dir=config.state_dir,
                            audit=JsonlAuditSink(config.audit_log) if config.audit_log else None) as pilot:
-            tools = DiscoveryTools(pilot, connect_wait=config.connect_wait)
+            index = await asyncio.to_thread(CapabilityIndex.from_catalog, catalog)
+            tools = DiscoveryTools(pilot, connect_wait=config.connect_wait, index=index)
+            refresher = asyncio.create_task(_refresh_registry(catalog, tools, config)) if config.registry_sync else None
             try:
                 await create_gateway(tools).run_stdio_async()
             finally:
+                if refresher is not None:
+                    refresher.cancel()
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await refresher
                 await tools.close()
     finally:
         login.close()

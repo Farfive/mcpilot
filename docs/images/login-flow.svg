@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect width="1200" height="1000" fill="#ffffff"/>
+<text x="40" y="48" font-size="26" font-weight="700" fill="#0f172a">Connecting an account once, reusing it everywhere</text>
+<text x="40" y="74" font-size="15" fill="#64748b">MCP authorization (OAuth 2.1 + PKCE) with a local gateway. The model only ever sees a status such as finish_login.</text>
+<line x1="110" y1="140" x2="110" y2="970" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="20" y="100" width="180" height="40" rx="10" fill="#fff7ed" stroke="#fdba74"/>
+<text x="110" y="126" font-size="15" font-weight="700" fill="#9a3412" text-anchor="middle">User's browser</text>
+<line x1="330" y1="140" x2="330" y2="970" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="240" y="100" width="180" height="40" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="330" y="126" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">Host + LLM</text>
+<line x1="590" y1="140" x2="590" y2="970" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="500" y="100" width="180" height="40" rx="10" fill="#eef2ff" stroke="#a5b4fc"/>
+<text x="590" y="126" font-size="15" font-weight="700" fill="#3730a3" text-anchor="middle">MCPilot gateway</text>
+<line x1="860" y1="140" x2="860" y2="970" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="770" y="100" width="180" height="40" rx="10" fill="#f0fdfa" stroke="#5eead4"/>
+<text x="860" y="126" font-size="15" font-weight="700" fill="#115e59" text-anchor="middle">Notion (MCP + OAuth)</text>
+<line x1="1080" y1="140" x2="1080" y2="970" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 6"/>
+<rect x="990" y="100" width="180" height="40" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="1080" y="126" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">OS keychain</text>
+<rect x="30" y="156" width="1140" height="30" rx="6" fill="#f1f5f9"/>
+<text x="44" y="176" font-size="13" font-weight="700" fill="#334155">First use</text>
+<path d="M330 220 L582 220" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="346" cy="206" r="10" fill="#4f46e5"/><text x="346" y="210" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="364" y="211" font-size="13" fill="#1e293b" font-family="SFMono-Regular, Menlo, Consolas, monospace">mcpilot_find_tools("search Notion…")</text>
+<path d="M590 266 L852 266" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="252" r="10" fill="#4f46e5"/><text x="606" y="256" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="624" y="257" font-size="13" fill="#1e293b">MCP request without a token</text>
+<path d="M860 302 L598 302" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="606" cy="288" r="10" fill="#4f46e5"/><text x="606" y="292" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="624" y="293" font-size="13" fill="#1e293b">401 + Protected Resource Metadata</text>
+<path d="M590 348 L852 348" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="334" r="10" fill="#4f46e5"/><text x="606" y="338" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="624" y="339" font-size="13" fill="#1e293b">discover authorization server · register client (minimal scopes)</text>
+<path d="M590 394 L118 394" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="126" cy="380" r="10" fill="#4f46e5"/><text x="126" y="384" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="144" y="385" font-size="13" fill="#1e293b">open sign-in page (PKCE S256, state)</text>
+<path d="M590 440 L338 440" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="346" cy="426" r="10" fill="#4f46e5"/><text x="346" y="430" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<text x="364" y="431" font-size="13" fill="#1e293b">needs_user: finish_login — no URL</text>
+<path d="M110 486 L852 486" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="126" cy="472" r="10" fill="#4f46e5"/><text x="126" y="476" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+<text x="144" y="477" font-size="13" fill="#1e293b">user signs in and consents at Notion</text>
+<path d="M860 522 L118 522" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<circle cx="126" cy="508" r="10" fill="#4f46e5"/><text x="126" y="512" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">8</text>
+<text x="144" y="513" font-size="13" fill="#1e293b">redirect to 127.0.0.1:8765/callback</text>
+<path d="M110 568 L582 568" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="126" cy="554" r="10" fill="#4f46e5"/><text x="126" y="558" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">9</text>
+<text x="144" y="559" font-size="13" fill="#1e293b">callback (code, state) → matched to the pending login</text>
+<path d="M590 614 L852 614" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="600" r="10" fill="#4f46e5"/><text x="606" y="604" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">10</text>
+<text x="624" y="605" font-size="13" fill="#1e293b">exchange code + PKCE verifier (resource-bound)</text>
+<path d="M590 660 L1072 660" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="646" r="10" fill="#4f46e5"/><text x="606" y="650" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">11</text>
+<text x="624" y="651" font-size="13" fill="#1e293b">read encryption key → store token encrypted</text>
+<path d="M330 706 L582 706" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="346" cy="692" r="10" fill="#4f46e5"/><text x="346" y="696" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">12</text>
+<text x="364" y="697" font-size="13" fill="#1e293b">mcpilot_find_tools again → read-only tools ready</text>
+<rect x="30" y="738" width="1140" height="30" rx="6" fill="#f1f5f9"/>
+<text x="44" y="758" font-size="13" font-weight="700" fill="#334155">Next session (new gateway process, e.g. tomorrow)</text>
+<path d="M590 806 L1072 806" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="792" r="10" fill="#4f46e5"/><text x="606" y="796" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">13</text>
+<text x="624" y="797" font-size="13" fill="#1e293b">read key, decrypt stored token</text>
+<path d="M590 852 L852 852" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<circle cx="606" cy="838" r="10" fill="#4f46e5"/><text x="606" y="842" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">14</text>
+<text x="624" y="843" font-size="13" fill="#1e293b">connect with stored token (refreshed if expired) — no browser</text>
+<rect x="40" y="880" width="520" height="84" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+<text x="52" y="902" font-size="12.5" fill="#3730a3">Remote gateway (many users): the sign-in link travels as an MCP URL</text>
+<text x="52" y="921" font-size="12.5" fill="#3730a3">elicitation to a /connect page that verifies the browser's identity</text>
+<text x="52" y="940" font-size="12.5" fill="#3730a3">and binds the callback with a cookie; a forwarded link gets 403.</text>
+<rect x="600" y="880" width="560" height="84" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+<text x="612" y="902" font-size="12.5" fill="#475569">Nothing secret is written to the host config (e.g. ~/.claude.json).</text>
+<text x="612" y="921" font-size="12.5" fill="#475569">mcpilot status shows connections; mcpilot disconnect removes access</text>
+<text x="612" y="940" font-size="12.5" fill="#475569">and explains how to revoke it at the provider.</text>
+</svg>

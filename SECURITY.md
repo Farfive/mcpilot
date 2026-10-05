@@ -16,6 +16,7 @@ Nie zgłaszaj podatności w publicznych issue. Kanał prywatny: **do uzupełnien
 - Wpisy rejestrów MCP nigdy nie są wykonywalne. Uruchamiane są wyłącznie manifesty zatwierdzone przez hosta (odcisk RFC 8785).
 - Zapis lub wysyłka po niepewnym przekroczeniu czasu nie są powtarzane automatycznie.
 - Brama zdalna wymaga tokenu hosta; link logowania u dostawcy jest jednorazowy i związany z przeglądarką właściciela.
+- `python -m mcpilot setup` nie zapisuje sekretów w konfiguracji hosta MCP: klucz szyfrujący trafia do pęku kluczy systemu, PAT do zaszyfrowanego magazynu, a odczyt nigdy nie wymaga przekazania sekretu w argumentach polecenia.
 
 ## Ryzyka rezydualne (świadomie zaakceptowane)
 

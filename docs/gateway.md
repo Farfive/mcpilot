@@ -17,14 +17,19 @@ Model hosta widzi dwa narzędzia z [warstwy discovery](architecture.md#kontekst-
 
 # Wariant lokalny (stdio)
 
-## Uruchomienie
+## Uruchomienie (zalecane: pakiet pilotażowy)
 
 ```sh
-python examples/gateway_setup.py            # zapisuje .mcpilot/gateway/{gateway.json, approved-integrations.json}
-python -m mcpilot.gateway --config .mcpilot/gateway/gateway.json
+pip install './mcpilot-0.1.0-py3-none-any.whl[keychain]'   # wheel z artefaktów CI; z repozytorium: pip install -e '.[keychain]'
+python -m mcpilot setup --workspace ~/dokumenty --github-pat-prompt   # Notion + GitHub (+ pliki), Claude Code
+python -m mcpilot status                                              # stan połączeń, bez tokenów
+python -m mcpilot disconnect notion                                   # usuwa lokalny dostęp
+python -m mcpilot uninstall [--purge]                                 # wyrejestrowanie, usunięcie klucza
 ```
 
-Skrypt tworzy manifest z lokalnym filesystem (działa od razu), GitHub (PAT ze zmiennej `GITHUB_PAT`) i Notion (OAuth w przeglądarce). Dwie ostatnie wymagają kont.
+`setup` zapisuje manifest i `gateway.json` w `~/.mcpilot/pilot`, tworzy klucz szyfrujący w pęku kluczy systemu (macOS Keychain, Windows Credential Locker, Secret Service), szyfruje PAT GitHub (z ukrytego pola lub `--github-pat-env`, nigdy z argumentu) i rejestruje bramę w Claude Code (`claude mcp add`, domyślnie `--scope user`) **bez sekretów w konfiguracji hosta**. Istniejącego wpisu o tej samej nazwie nie nadpisuje. Każda sesja hosta uruchamia nowy proces bramy, który odczytuje klucz z pęku kluczy, więc zapisane logowania działają po restarcie.
+
+Ręczna konfiguracja (inne hosty, testy): `python examples/gateway_setup.py` zapisuje `gateway.json` bez klucza; wtedy klucz trzeba podać w `keychain_item` albo zmienną `key_env`, inaczej tokeny żyją tylko w pamięci procesu (brama ostrzega na stderr).
 
 ### Konfiguracja `gateway.json`
 
@@ -37,11 +42,14 @@ Skrypt tworzy manifest z lokalnym filesystem (działa od razu), GitHub (PAT ze z
 | `accounts` | Dopuszczone etykiety kont | `["default"]` |
 | `state_dir` | Cache katalogu, środowiska pakietów, poświadczenia | `~/.mcpilot` |
 | `allow_loopback` | Zezwolenie na endpointy `127.0.0.1` (testy) | `false` |
-| `key_env` | Zmienna z kluczem Fernet; bez niej tokeny tylko w pamięci | `MCPILOT_SECRET_KEY` |
+| `key_env` | Zmienna z kluczem Fernet (ma pierwszeństwo przed pękiem kluczy) | `MCPILOT_SECRET_KEY` |
+| `keychain_item` | Wpis w pęku kluczy systemu (usługa `mcpilot`) z kluczem Fernet; ustawia go `setup` | brak |
 | `login_port` | Port callbacku OAuth na `127.0.0.1` (część `redirect_uri`) | `8765` |
 | `connect_wait` | Sekundy oczekiwania na połączenie, zanim wynik zgłosi `auth_pending` | `15` |
-| `secrets` | Mapa `id integracji → nazwa zmiennej` z PAT/kluczem | `{}` |
+| `secrets` | Mapa `id integracji → nazwa zmiennej` z PAT/kluczem (alternatywa dla PAT zapisanego przez `setup`; zmienna trafia wtedy do konfiguracji hosta) | `{}` |
 | `audit_log` | Plik JSON Lines ze zdarzeniami audytu (0600; bez argumentów, wyników i sekretów); wejście dla `python -m mcpilot.metrics` | brak |
+| `registry_sync` | Odświeżanie MCP Registry w tle i przebudowa indeksu wyszukiwania (sugestie `needs_admin_approval`); `setup` włącza domyślnie | `false` |
+| `registry_sync_interval` | Odstęp synchronizacji w sekundach | `3600` |
 
 Nieznane pola są odrzucane. Każda integracja z manifestu jest zatwierdzona dokładnie w tej wersji; zmiana manifestu wymaga restartu bramy.
 
@@ -49,11 +57,10 @@ Nieznane pola są odrzucane. Każda integracja z manifestu jest zatwierdzona dok
 
 Host musi raz dodać bramę jako serwer stdio. Biblioteka nie dopisuje się sama do konfiguracji żadnego hosta.
 
-**Claude Code:**
+**Claude Code** (robi to `python -m mcpilot setup`):
 
 ```sh
-claude mcp add mcpilot -e MCPILOT_SECRET_KEY=<klucz> -e GITHUB_PAT=<opcjonalnie> -- \
-  /ścieżka/.venv/bin/python -m mcpilot.gateway --config /ścieżka/.mcpilot/gateway/gateway.json
+claude mcp add mcpilot -- /ścieżka/.venv/bin/python -m mcpilot.gateway --config ~/.mcpilot/pilot/gateway.json
 ```
 
 **Hosty z plikiem `mcpServers`:**
@@ -63,8 +70,7 @@ claude mcp add mcpilot -e MCPILOT_SECRET_KEY=<klucz> -e GITHUB_PAT=<opcjonalnie>
   "mcpServers": {
     "mcpilot": {
       "command": "/ścieżka/.venv/bin/python",
-      "args": ["-m", "mcpilot.gateway", "--config", "/ścieżka/.mcpilot/gateway/gateway.json"],
-      "env": {"MCPILOT_SECRET_KEY": "<klucz Fernet>", "GITHUB_PAT": "<opcjonalnie>"}
+      "args": ["-m", "mcpilot.gateway", "--config", "/ścieżka/.mcpilot/pilot/gateway.json"]
     }
   }
 }
@@ -73,7 +79,7 @@ claude mcp add mcpilot -e MCPILOT_SECRET_KEY=<klucz> -e GITHUB_PAT=<opcjonalnie>
 `gateway_setup.py` wypisuje wpisy dla Claude Code, Cursor i VS Code z poprawnymi ścieżkami. Który host jest zweryfikowany, a który tylko zadeklarowany w dokumentacji: [hosts.md](hosts.md). Wymagania po stronie hosta:
 
 - interpreter z zainstalowanym `mcpilot` (bezwzględna ścieżka do venv);
-- klucz `MCPILOT_SECRET_KEY` z menedżera sekretów, jeśli tokeny mają przetrwać restart (`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`);
+- klucz szyfrujący w pęku kluczy systemu (`setup`, pole `keychain_item`), jeśli tokeny mają przetrwać restart; nie umieszczaj klucza ani PAT w sekcji `env` konfiguracji hosta, bo trafiają tam otwartym tekstem;
 - możliwość otwarcia przeglądarki i wolny port `login_port` na loopback dla logowania OAuth;
 - limit czasu narzędzi hosta większy niż `connect_wait` (wywołanie wraca po tym czasie z `auth_pending`, a logowanie kończy się w tle);
 - ewentualne `npm`/Python dla integracji instalowanych lokalnie.
