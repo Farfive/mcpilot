@@ -106,7 +106,7 @@ scripts/ci.sh                                           # lokalny odpowiednik CI
 | 48 | Szablon Notion zgodny z dokumentacją narzędzi (`notion-search`, `notion-fetch`, tylko odczyt) | dokumentacja (bez konta); nazwy parametrów do potwierdzenia | `spec/providers/notion-mcp-docs-2026-10-05.json` |
 | 49 | Prawdziwy host: Claude Code 2.1.284 → brama stdio i brama HTTP z tokenem hosta → odczyt | E2E lokalnie | `spec/hosts/*.jsonl`, [docs/hosts.md](hosts.md) |
 | 50 | Cursor, VS Code (Copilot) | nie zweryfikowano (dokumentacja w [hosts.md](hosts.md)) | checklista ręczna w [hosts.md](hosts.md) |
-| 51 | CI: ruff + pytest (Python 3.11–3.13), `npm test` (Node 20/22) z serwerami Python, artefakty z `SHA256SUMS`; spójna wersja Python/TS/CHANGELOG | E2E lokalnie (`scripts/ci.sh`, pytest na 3.11.13 i 3.13); workflow GitHub Actions zaimplementowany, ale nieuruchomiony (brak zdalnego repozytorium) | `.github/workflows/ci.yml`, `scripts/build_artifacts.sh`, `test_release.py` |
+| 51 | CI: ruff + pytest (Python 3.11–3.13), `npm test` (Node 20/22) z serwerami Python, artefakty z `SHA256SUMS`; spójna wersja Python/TS/CHANGELOG | E2E sieć: GitHub Actions w prywatnym repozytorium `Farfive/mcpilot` (2026-10-05) — wszystkie zadania zielone (Python 3.11–3.13, Node 20/22, artefakty) | `.github/workflows/ci.yml`, `scripts/build_artifacts.sh`, `test_release.py` |
 
 ## Pakiet pilotażowy (Claude Code)
 
