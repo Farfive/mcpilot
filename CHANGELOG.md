@@ -17,6 +17,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/), wersjonowanie semantycz
 
 - Dobór MCP z kontekstu (`mcpilot.search`): indeks BM25F nad zatwierdzonymi integracjami i rejestrem, polska odmiana nazw produktów, intencja dostawcy, pokrycie wielu wątków; pole `context` w `mcpilot_find_tools`, `suggestions` z `needs_admin_approval`; `registry_sync` w bramie lokalnej; `python -m mcpilot.search --eval`.
 
+- Zatwierdzanie dowolnego serwera z rejestru: `python -m mcpilot approve <id>` (manifest tylko do odczytu z `readOnlyHint`, przypięta wersja, OAuth na żądanie serwera, pakiety lokalne tylko z `--local`/`--container`, wymagany TTY) i `remove`; `approvals.jsonl`. Brama lokalna przeładowuje zatwierdzenia bez restartu hosta, a sugestie dostają pole `user_runs`.
+
+### Naprawione
+- Narzędzie `mcpilot_find_tools` w bramie lokalnej nie przyjmowało pola `context`.
+- Błędy synchronizacji rejestru w tle były po cichu pomijane; teraz trafiają na stderr.
+
 ### Zmienione (niezgodne wstecz)
 - Odcisk manifestu i skrót klucza poświadczeń liczone z RFC 8785 (zgodne z TypeScript). Poświadczenia zapisane wcześniej w `EncryptedFileSecretStore` trzeba połączyć ponownie.
 - `issue_read` w GitHub MCP wymaga parametru `method` (zgodnie z `github-mcp-server` v1.14.0); fixture i przykłady zaktualizowane.

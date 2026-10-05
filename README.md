@@ -106,7 +106,8 @@ You can pass `context` with the recent conversation. Matches split into two tier
 
 - **Approved integrations** — connected and returned as tools.
 - **Other MCP Registry servers** — returned as `suggestions` with `needs_admin_approval`. They carry no
-  endpoint, package or command, so the model cannot run them.
+  endpoint, package or command, so the model cannot run them. The local gateway adds the command the
+  user can run to approve one (see below).
 
 ```sh
 python -m mcpilot.search "compare jira tickets with the confluence docs" --cache registry-cache.json
@@ -122,6 +123,26 @@ python -m mcpilot.search --eval spec/search_eval_holdout.json --cache registry-c
 | Held-out queries, first run | 10/12 in the top three, 8/12 ranked first |
 
 These sets are small and author-written; real accuracy will come from pilot queries. Details: [docs/search.md](docs/search.md).
+
+## Approving any registry server
+
+The model can suggest any of the ~38k active registry servers, but only a person can make one runnable:
+
+```sh
+python -m mcpilot approve com.atlassian/atlassian-mcp-server
+```
+
+1. MCPilot fetches the full registry entry and shows the publisher (official vendor namespace or a
+   personal account), version, endpoint or package, and how sign-in works.
+2. After you confirm, it connects once. If the server asks for a login, your browser opens.
+3. It lists the server's tools. Only tools annotated `readOnlyHint` are mapped. Write tools need
+   `--include-write` and a second typed confirmation.
+4. On a second "yes", it writes a version-pinned manifest. The running gateway picks it up on the next
+   search, with no host restart, and the conversation continues.
+
+Approval needs a real terminal, so a model running commands in the background cannot approve
+anything. Local packages need `--local` or `--container` plus a typed "run code on this computer"
+consent. `python -m mcpilot remove <id>` withdraws access. Details: [docs/approval.md](docs/approval.md).
 
 ## Use it as a library
 
@@ -197,6 +218,7 @@ Every claim is labelled by evidence. The full list of 57 criteria with the tests
 | Claude Code as host (stdio + HTTP gateway, `mcpilot setup`) | ✅ End to end, local | live runs with the real macOS Keychain ([docs/hosts.md](docs/hosts.md)) |
 | Official GitHub MCP server tool names | ✅ Network | `github-mcp-server` v1.14.0 `tools/list` ([snapshot](spec/providers/github-mcp-server-1.14.0.json)) |
 | MCP Registry sync, 40k entries, incremental | ✅ Network | live registry |
+| Registry server → approval → gateway call (`mcpilot approve`) | ✅ Network | Microsoft Learn MCP from the live registry ([docs/approval.md](docs/approval.md)) |
 | MCP OAuth (PKCE, DCR, refresh), sign-in button, URL elicitation | 🟡 Demonstrated | fixture identity provider, real protocol |
 | Python ↔ TypeScript parity | ✅ End to end, local | shared vectors ([spec/vectors.json](spec/vectors.json)) |
 | Notion and GitHub on real accounts | ⏳ Needs accounts | protocol runner ready: `python -m mcpilot.pilot` ([docs/pilots](docs/pilots/README.md)) |
@@ -208,10 +230,10 @@ Every claim is labelled by evidence. The full list of 57 criteria with the tests
 
 ```
 src/mcpilot/      Python SDK: sdk, router, policy, catalog, auth, runtime, workflow,
-                  discovery, search, gateway (local), remote (multi-user), cli, pilot, metrics
+                  discovery, search, approval, gateway (local), remote (multi-user), cli, pilot, metrics
 ts/               TypeScript SDK (@mcpilot/sdk) with Node-only extras in @mcpilot/sdk/node
 spec/             Cross-language vectors, provider tool snapshots, host evidence, search eval sets
-tests/            pytest suite (96 tests) — real MCP servers over stdio/HTTP, OAuth fixtures
+tests/            pytest suite (106 tests) — real MCP servers over stdio/HTTP, OAuth fixtures
 examples/         Flagship Notion + GitHub demo, OAuth demo, remote gateway demo, Claude agent
 docs/             Architecture, auth, gateway, search, hosts, pilots, acceptance (Polish)
 ```
@@ -230,7 +252,7 @@ CI runs Python 3.11–3.13 and Node 20/22, and builds wheel, sdist and npm tarba
 1. **Pilot:** read-only Notion + GitHub on real accounts in Claude Code, using the recorded protocol reports.
 2. **Remote gateway beyond one instance:** shared login state, a KMS/Vault `SecretStore`, metrics and tracing.
 3. **Team features:** managed OAuth apps, an admin API for connections and approvals, audit export and retention.
-4. **More integrations:** Google Drive and Slack once provider requirements are met; a reviewed path from registry suggestion to approved manifest.
+4. **More integrations:** Google Drive and Slack once provider requirements are met; approval from the host window (MCP elicitation) in addition to the terminal.
 
 ## Documentation
 
@@ -240,6 +262,7 @@ Detailed docs are in Polish:
 - [Authorization](docs/auth.md)
 - [Gateways](docs/gateway.md)
 - [Search](docs/search.md)
+- [Approving registry servers](docs/approval.md)
 - [Hosts](docs/hosts.md)
 - [Integrations](docs/integrations.md)
 - [Pilots](docs/pilots/README.md)

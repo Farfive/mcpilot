@@ -51,7 +51,7 @@ Ręczna konfiguracja (inne hosty, testy): `python examples/gateway_setup.py` zap
 | `registry_sync` | Odświeżanie MCP Registry w tle i przebudowa indeksu wyszukiwania (sugestie `needs_admin_approval`); `setup` włącza domyślnie | `false` |
 | `registry_sync_interval` | Odstęp synchronizacji w sekundach | `3600` |
 
-Nieznane pola są odrzucane. Każda integracja z manifestu jest zatwierdzona dokładnie w tej wersji; zmiana manifestu wymaga restartu bramy.
+Nieznane pola są odrzucane. Każda integracja z manifestu jest zatwierdzona dokładnie w tej wersji. Brama lokalna sprawdza czas modyfikacji `gateway.json` i manifestu przed każdym `mcpilot_find_tools` i przeładowuje zatwierdzenia bez restartu (np. po `python -m mcpilot approve`, [approval.md](approval.md)); błędny plik zostawia poprzednie zatwierdzenia. Brama zdalna wymaga restartu.
 
 ## Konfiguracja hosta
 

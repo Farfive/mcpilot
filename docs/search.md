@@ -15,7 +15,7 @@
 ## Użycie w przepływie
 
 - Router (aliasy usług) działa jak dotąd. Gdy nie rozpozna usługi albo zostają brakujące wymagania, indeks szuka w kontekście **wśród zatwierdzonych integracji**, a plan jest powtarzany z ich usługami.
-- Jeśli nadal czegoś brakuje, wynik zawiera `suggestions`: maks. 3 wpisy z rejestru z `action: "needs_admin_approval"`. Mają tylko ID, opis i dopasowane słowa, bez endpointów, pakietów i poleceń. Nie da się ich wywołać.
+- Jeśli nadal czegoś brakuje, wynik zawiera `suggestions`: maks. 3 wpisy z rejestru z `action: "needs_admin_approval"`. Mają tylko ID, opis i dopasowane słowa, bez endpointów, pakietów i poleceń. Nie da się ich wywołać. Brama lokalna dodaje `user_runs` z poleceniem `python -m mcpilot approve <id>` dla użytkownika ([approval.md](approval.md)).
 - Brama lokalna buduje indeks przy starcie. Z `registry_sync: true` (domyślnie w `python -m mcpilot setup`) odświeża rejestr w tle (pełna synchronizacja raz, potem przyrostowa) i przebudowuje indeks. Brama zdalna buduje indeks per tenant.
 - TypeScript nie ma jeszcze indeksu. Gdy samo zadanie nie wystarcza, dołącza `context` do planowania routera.
 

@@ -27,6 +27,7 @@ class FixtureTool:
     description: str
     input_schema: dict
     handler: Callable[[dict], str]
+    annotations: dict | None = None  # MCP tool annotations, e.g. {"readOnlyHint": True}
 
 
 DEFAULT_TOOLS = {
@@ -194,7 +195,8 @@ class OAuthFixture:
                 "serverInfo": {"name": "oauth-fixture", "version": "1.0.0"},
             }
         elif method == "tools/list":
-            result = {"tools": [{"name": name, "description": tool.description, "inputSchema": tool.input_schema}
+            result = {"tools": [{"name": name, "description": tool.description, "inputSchema": tool.input_schema,
+                                 **({"annotations": tool.annotations} if tool.annotations else {})}
                                 for name, tool in self.tools.items()]}
         elif method == "tools/call":
             name = message["params"]["name"]

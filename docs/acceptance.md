@@ -10,7 +10,7 @@ Stan na **2026-10-04**. Każde kryterium ma status i dowód, który można uruch
 | **Wymaga konta** | Kod i konfiguracja gotowe; brak testu na koncie dostawcy lub kluczu API. |
 
 ```sh
-python -m pytest                                        # 96 testów lokalnych + 1 opcjonalny sieciowy
+python -m pytest                                        # 106 testów lokalnych + 1 opcjonalny sieciowy
 MCPILOT_NETWORK_TESTS=1 python -m pytest tests/test_network.py
 ruff check .
 (cd ts && npm test)                                     # 17 testów TypeScript, w tym z serwerami Python
@@ -123,6 +123,11 @@ scripts/ci.sh                                           # lokalny odpowiednik CI
 | 55 | Wyszukiwanie w kontekście: odmiana nazw produktów, intencja dostawcy, pokrycie wielu wątków, kara dla `deprecated`, brak usuniętych; sugestie bez endpointów | E2E lokalnie | `test_search.py` |
 | 56 | Router nie zna usługi → indeks znajduje zatwierdzoną integrację z `context`; brak zatwierdzonej → `suggestions` z `needs_admin_approval`, niewywoływalne | E2E lokalnie | `test_search::test_discovery_uses_context_search_for_unaliased_services_and_suggests_registry` |
 | 57 | Trafność i szybkość na prawdziwym rejestrze (39 321 wpisów): zestaw odłożony — pierwszy pomiar 10/12 w pierwszej trójce, mediana zapytania ok. 10 ms | E2E sieć (ręcznie, 2026-10-05; cache rejestru nie jest w repozytorium) | [search.md](search.md), `spec/search_eval*.json` |
+| 58 | `approve`: wpis z rejestru → manifest tylko do odczytu (`readOnlyHint`), przypięta wersja, rekord w `approvals.jsonl`; odmowa w dowolnym kroku nic nie zapisuje | E2E lokalnie | `test_approval::test_approve_end_to_end_then_gateway_reloads_without_restart` |
+| 59 | Uruchomiona brama przeładowuje zatwierdzenia przy następnym wyszukaniu; `remove` wycofuje dostęp i wydane ID narzędzi dają `PolicyDenied` | E2E lokalnie | jw. |
+| 60 | Zapis tylko z `--include-write` i wpisanym `zapis`; pakiety lokalne tylko z `--local`/`--container` i wpisanym `uruchom`; brak TTY → odmowa | E2E lokalnie | `test_approval.py` |
+| 61 | Serwer z OAuth: logowanie raz podczas zatwierdzenia, brama korzysta z tego samego dostępu | Demonstracyjne | `test_approval::test_oauth_server_logs_in_once_during_approval_and_keeps_oauth` |
+| 62 | Prawdziwy rejestr + Microsoft Learn MCP: zatwierdzenie (3 narzędzia, `auth: none`), wyszukanie i wywołanie przez bramę | E2E sieć (ręcznie, 2026-10-05) | [approval.md](approval.md) |
 
 ## Wymaga kont dostawców
 

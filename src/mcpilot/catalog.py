@@ -145,6 +145,10 @@ class Catalog:
         """Add or replace a manifest supplied by trusted host code."""
         self._trusted[integration.id] = integration.model_copy(deep=True)
 
+    def replace_trusted(self, integrations: Iterable[Integration]) -> None:
+        """Swap the whole approved set (e.g. after the host's manifest changed); snapshots stay."""
+        self._trusted = {i.id: i.model_copy(deep=True) for i in integrations}
+
     def get(self, integration_id: str) -> Integration:
         return self._trusted[integration_id].model_copy(deep=True)
 

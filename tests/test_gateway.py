@@ -22,6 +22,8 @@ async def test_gateway_exposes_only_meta_tools_and_runs_task_to_call(tmp_path):
         async with Client(create_gateway(tools)) as client:
             listed = await client.list_tools()
             assert sorted(t.name for t in listed.tools) == [CALL_TOOL, FIND_TOOLS]
+            find = next(t for t in listed.tools if t.name == FIND_TOOLS)
+            assert "context" in find.input_schema["properties"]  # hosts can pass the conversation
             found = (await client.call_tool(FIND_TOOLS, {"task": "add numbers", "services": ["calculator"]}))
             payload = found.structured_content
             assert [t["name"] for t in payload["tools"]] == ["add"]

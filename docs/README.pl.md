@@ -73,6 +73,7 @@ Publiczne API: `discover`, `plan`, `connect`, `tools_for`, `call`, `status`, `di
 | Brama MCP lokalna (stdio) | E2E lokalnie | Jeden użytkownik, przeglądarka + callback na loopback; zweryfikowana w Claude Code ([hosty](hosts.md)) |
 | Brama MCP zdalna (HTTP, wielu użytkowników) | E2E lokalnie / Demonstracyjne | JWT hosta, tenanty, limity, elicytacja URL; IdP organizacji: wymaga konta |
 | TypeScript SDK | E2E lokalnie / Demonstracyjne | Zgodność z Pythonem potwierdzona wspólnymi wektorami |
+| Zatwierdzanie serwerów z rejestru (`python -m mcpilot approve`) | E2E lokalnie / E2E sieć | Tylko odczyt domyślnie, wymagany terminal; Microsoft Learn z prawdziwego rejestru ([zatwierdzanie](approval.md)) |
 | Google Drive, Slack | `setup_required` | Wymagają aplikacji OAuth i zgody administratora |
 
 ## Dokumentacja
@@ -84,6 +85,7 @@ Publiczne API: `discover`, `plan`, `connect`, `tools_for`, `call`, `status`, `di
 - [Brama MCP (lokalna i zdalna), elicytacja URL, konfiguracja hostów](gateway.md)
 - [TypeScript SDK i zgodność z Pythonem](typescript.md)
 - [Dobór MCP z kontekstu rozmowy (algorytm, pomiary)](search.md)
+- [Zatwierdzanie serwerów z MCP Registry jednym poleceniem](approval.md)
 - [Zgodność hostów MCP (Claude Code, Cursor, VS Code)](hosts.md)
 - [Pilotaż na prawdziwych kontach: definicja integracji wspieranej, raporty](pilots/README.md)
 - [Zmiany](../CHANGELOG.md) i [bezpieczeństwo](../SECURITY.md)

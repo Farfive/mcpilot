@@ -35,8 +35,8 @@ DEFINITIONS: tuple[dict[str, Any], ...] = (
             "Returns tool ids with input schemas and the status of each connection. Pass recent "
             "conversation context when the task alone does not name the service. If a "
             "connection needs the user, ask them to connect it in the application; never ask "
-            "for passwords, tokens or API keys. 'suggestions' are servers an administrator "
-            "could approve; they cannot be called."
+            "for passwords, tokens or API keys. 'suggestions' are servers the user or an "
+            "administrator could approve outside this conversation; they cannot be called."
         ),
         "input_schema": {
             "type": "object",
@@ -89,8 +89,11 @@ class DiscoveryTools:
         self, pilot: MCPilot, *, connect_wait: float | None = None,
         login_started: Callable[[str, str], Awaitable[Any]] | None = None,
         index: CapabilityIndex | None = None,
+        approve_command: Callable[[str], str] | None = None,
     ) -> None:
         self.pilot = pilot
+        # Host-specific instruction for the user (e.g. a CLI command); approval itself stays human.
+        self.approve_command = approve_command
         # Context search over approved manifests (+ registry suggestions when the catalog has them).
         self.index = index
         self.connect_wait = connect_wait
@@ -130,7 +133,8 @@ class DiscoveryTools:
             if extra:
                 plan = await self.pilot.plan(TaskRequest(task=task, services=services + extra))
             if plan.missing or not plan.selections:
-                suggestions = [{**h.public(), "action": "needs_admin_approval"}
+                suggestions = [{**h.public(), "action": "needs_admin_approval",
+                                **({"user_runs": self.approve_command(h.id)} if self.approve_command else {})}
                                for h in self.index.search(query, tier="registry", limit=3)]
         pending: list[dict[str, Any]] = []
         if self.connect_wait is not None:

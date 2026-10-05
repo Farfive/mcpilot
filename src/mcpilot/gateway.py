@@ -47,14 +47,19 @@ from .sdk import MCPilot
 from .search import CapabilityIndex
 
 
-def create_gateway(tools: DiscoveryTools, *, name: str = "MCPilot gateway") -> MCPServer:
+def create_gateway(tools: DiscoveryTools, *, name: str = "MCPilot gateway",
+                   before_find: Callable[[], Any] | None = None) -> MCPServer:
     server = MCPServer(name, version=__version__, log_level="CRITICAL")
     descriptions = {d["name"]: d["description"] for d in DEFINITIONS}
 
-    async def find_tools(task: str, services: list[str] | None = None) -> dict[str, Any]:
+    async def find_tools(task: str, services: list[str] | None = None, context: str | None = None) -> dict[str, Any]:
+        if before_find is not None:
+            await before_find()
         arguments: dict[str, Any] = {"task": task}
         if services:
             arguments["services"] = services
+        if context:
+            arguments["context"] = context
         return await tools.handle(FIND_TOOLS, arguments)
 
     async def call_tool(tool_id: str, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -182,13 +187,61 @@ def open_store(config: GatewayConfig, *, warn: bool = True) -> SecretStore:
 async def _refresh_registry(catalog: Catalog, tools: DiscoveryTools, config: GatewayConfig) -> None:
     """Background registry sync (full once, then incremental) and index rebuild; failures keep the cache."""
     while True:
-        with contextlib.suppress(Exception):
+        try:
             await catalog.sync()
             tools.index = await asyncio.to_thread(CapabilityIndex.from_catalog, catalog)
+        except Exception as exc:
+            # Keep serving from the cache; stderr only (stdout carries MCP). Catalog.sync_status records it too.
+            print(f"MCPilot: registry sync failed ({type(exc).__name__}); using the cached registry",
+                  file=sys.stderr)
         await asyncio.sleep(config.registry_sync_interval)
 
 
-async def serve(config: GatewayConfig) -> None:
+class ApprovalReloader:
+    """Pick up `python -m mcpilot approve/remove` without restarting the host.
+
+    Before each tool search the gateway compares the modification times of
+    gateway.json and the manifest; on a change it reloads both, replaces the
+    trusted catalog and the policy, and rebuilds the search index. An invalid
+    file keeps the previous approvals.
+    """
+
+    def __init__(self, path: Path, config: GatewayConfig, pilot: MCPilot, tools: DiscoveryTools) -> None:
+        self.path, self.config, self.pilot, self.tools = path, config, pilot, tools
+        self._stamp = self._mtimes()
+        self._lock = asyncio.Lock()
+
+    def _mtimes(self) -> tuple[float, float]:
+        def mtime(path: Path) -> float:
+            try:
+                return path.stat().st_mtime_ns
+            except OSError:
+                return 0
+        return mtime(self.path), mtime(self.config.manifest)
+
+    async def __call__(self) -> bool:
+        async with self._lock:
+            stamp = self._mtimes()
+            if stamp == self._stamp:
+                return False
+            self._stamp = stamp
+            try:
+                config = GatewayConfig.load(self.path)
+                fresh = Catalog()
+                integrations = fresh.load_manifest(config.manifest)
+            except Exception as exc:
+                print(f"MCPilot: approvals not reloaded ({type(exc).__name__}); keeping the previous ones",
+                      file=sys.stderr)
+                return False
+            self.pilot.catalog.replace_trusted(integrations)
+            self.pilot.policy = Policy(integrations, capabilities=config.capabilities, effects=config.effects,
+                                       accounts=config.accounts, allow_loopback=config.allow_loopback)
+            self.config = config
+            self.tools.index = await asyncio.to_thread(CapabilityIndex.from_catalog, self.pilot.catalog)
+            return True
+
+
+async def serve(config: GatewayConfig, config_path: Path | None = None) -> None:
     catalog = Catalog(cache_path=config.state_dir / "registry-cache.json")
     catalog.load_manifest(config.manifest)
     policy = Policy(catalog.all(), capabilities=config.capabilities, effects=config.effects,
@@ -206,10 +259,13 @@ async def serve(config: GatewayConfig) -> None:
                            state_dir=config.state_dir,
                            audit=JsonlAuditSink(config.audit_log) if config.audit_log else None) as pilot:
             index = await asyncio.to_thread(CapabilityIndex.from_catalog, catalog)
-            tools = DiscoveryTools(pilot, connect_wait=config.connect_wait, index=index)
+            # The user runs this in a terminal; the gateway exposes no approval tool to the model.
+            hint = (lambda server: f"python -m mcpilot approve {server} --config {config_path}") if config_path else None
+            tools = DiscoveryTools(pilot, connect_wait=config.connect_wait, index=index, approve_command=hint)
             refresher = asyncio.create_task(_refresh_registry(catalog, tools, config)) if config.registry_sync else None
+            reload = ApprovalReloader(config_path, config, pilot, tools) if config_path is not None else None
             try:
-                await create_gateway(tools).run_stdio_async()
+                await create_gateway(tools, before_find=reload).run_stdio_async()
             finally:
                 if refresher is not None:
                     refresher.cancel()
@@ -292,7 +348,7 @@ def main(argv: list[str] | None = None) -> None:
         listen = raw.get("listen", {})
         asyncio.run(gateway.serve(listen.get("host", "127.0.0.1"), int(listen.get("port", 8000))))
         return
-    asyncio.run(serve(GatewayConfig.load(path)))
+    asyncio.run(serve(GatewayConfig.load(path), path.resolve()))
 
 
 if __name__ == "__main__":

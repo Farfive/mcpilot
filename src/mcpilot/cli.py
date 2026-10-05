@@ -1,6 +1,8 @@
 """Pilot kit commands for the local gateway: setup, status, disconnect, uninstall.
 
     python -m mcpilot setup --workspace ~/docs          # Notion + GitHub (+ local files), Claude Code
+    python -m mcpilot approve com.atlassian/atlassian-mcp-server   # any MCP Registry server
+    python -m mcpilot remove com.atlassian/atlassian-mcp-server
     python -m mcpilot status
     python -m mcpilot disconnect notion
     python -m mcpilot uninstall
@@ -25,9 +27,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .auth import AuthManager, CredentialKey
-from .catalog import Catalog
-from .gateway import GatewayConfig, open_store
+from .approval import ApprovalError
+from .approval import approve as approve_entry
+from .approval import remove as remove_entry
+from .auth import AuthManager, CredentialKey, OAuthConfig
+from .catalog import OFFICIAL_REGISTRY, Catalog
+from .gateway import GatewayConfig, LoopbackLogin, open_store
 from .integrations import filesystem, github, notion
 from .keys import KeychainUnavailable, keychain_delete, keychain_ensure, resolve_key
 from .pilot import REVOKE_HELP
@@ -177,6 +182,61 @@ def disconnect(args: argparse.Namespace) -> int:
     return 0
 
 
+def _interactive() -> bool:
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def approve(args: argparse.Namespace) -> int:
+    # Approval is a person's decision: a model running commands in the background has no terminal.
+    if not _interactive():
+        print("Zatwierdzenie wymaga terminala z osobą przy klawiaturze (stdin/stdout to nie TTY). "
+              f"Uruchom samodzielnie: python -m mcpilot approve {args.server}", file=sys.stderr)
+        return 2
+    config_path = Path(args.config).expanduser().resolve()
+    config = GatewayConfig.load(config_path)
+    login = LoopbackLogin(config.user_id, port=config.login_port)
+    try:
+        record = asyncio.run(approve_entry(
+            args.server, config_path=config_path, store=open_store(config, warn=False), user_id=config.user_id,
+            ask=input, say=print, secret_prompt=getpass.getpass,
+            login=OAuthConfig(login=login.broker, redirect_uri=login.redirect_uri), auth=args.auth,
+            local=args.local, container=args.container, include_write=args.include_write,
+            account=args.account, state_dir=config.state_dir, allow_loopback=config.allow_loopback,
+            source=args.registry))
+    except ApprovalError as exc:
+        print(f"Nie można zatwierdzić: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # network/auth failures: class name only, never payloads
+        print(f"Nie udało się połączyć z serwerem ({type(exc).__name__}). Nic nie zapisano.", file=sys.stderr)
+        return 1
+    finally:
+        login.close()
+    if record is None:
+        return 1
+    print(f"\nZatwierdzono {record['id']} ({len(record['tools'])} narzędzi, capability: "
+          f"{', '.join(record['capabilities'])}). Brama wczyta zmianę przy następnym wyszukaniu narzędzi.")
+    return 0
+
+
+def remove(args: argparse.Namespace) -> int:
+    config_path = Path(args.config).expanduser().resolve()
+    config = GatewayConfig.load(config_path)
+    catalog = Catalog()
+    catalog.load_manifest(config.manifest)
+    integration = next((i for i in catalog.all() if i.id == args.server), None)
+    if integration is None:
+        print(f"Nie ma zatwierdzonej integracji {args.server}", file=sys.stderr)
+        return 1
+    store = open_store(config, warn=False)
+    for account in config.accounts:
+        asyncio.run(AuthManager(store).revoke(config.user_id, integration.id, account,
+                                              endpoint=integration.endpoint or "stdio"))
+    remove_entry(config_path, integration.id)
+    print(f"Wycofano zatwierdzenie {integration.id} i usunięto lokalne poświadczenia. "
+          "Token wydany przez dostawcę cofniesz w jego ustawieniach.")
+    return 0
+
+
 def uninstall(args: argparse.Namespace) -> int:
     directory = Path(args.dir).expanduser().resolve()
     registration = json.loads((directory / SETUP_FILE).read_text()) if (directory / SETUP_FILE).exists() else {}
@@ -216,6 +276,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--scope", choices=["user", "local", "project"], default="user")
     p.add_argument("--name", default="mcpilot")
     p.set_defaults(handler=setup)
+
+    p = sub.add_parser("approve", help="approve an MCP Registry server (read-only by default) after review")
+    p.add_argument("server", help="registry name, e.g. com.atlassian/atlassian-mcp-server")
+    p.add_argument("--config", default=str(DEFAULT_DIR / "gateway.json"))
+    p.add_argument("--auth", choices=["oauth", "token"], help="remote servers: default OAuth unless a token is required")
+    p.add_argument("--local", action="store_true", help="allow an npm package to run on this computer")
+    p.add_argument("--container", action="store_true", help="run a package only inside Docker")
+    p.add_argument("--include-write", action="store_true", help="also map tools not marked read-only (asks again)")
+    p.add_argument("--account", default="default")
+    p.add_argument("--registry", default=OFFICIAL_REGISTRY, help=argparse.SUPPRESS)
+    p.set_defaults(handler=approve)
+
+    p = sub.add_parser("remove", help="withdraw the approval of an integration")
+    p.add_argument("server")
+    p.add_argument("--config", default=str(DEFAULT_DIR / "gateway.json"))
+    p.set_defaults(handler=remove)
 
     p = sub.add_parser("status", help="connection state per integration (no tokens shown)")
     p.add_argument("--config", default=str(DEFAULT_DIR / "gateway.json"))

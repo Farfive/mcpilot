@@ -21,8 +21,8 @@ export const DEFINITIONS = [
       + "Returns tool ids with input schemas and the status of each connection. Pass recent "
       + "conversation context when the task alone does not name the service. If a "
       + "connection needs the user, ask them to connect it in the application; never ask "
-      + "for passwords, tokens or API keys. 'suggestions' are servers an administrator "
-      + "could approve; they cannot be called.",
+      + "for passwords, tokens or API keys. 'suggestions' are servers the user or an "
+      + "administrator could approve outside this conversation; they cannot be called.",
     input_schema: {
       type: "object",
       properties: {
